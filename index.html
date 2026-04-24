@@ -1,158 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Journal" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="Journal"/>
   <title>Personal Journal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Cinzel:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=Cinzel:wght@400;500;600&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
   <style>
+    /* ── LATTE THEME ─────────────────────────────── */
+    :root {
+      --bg:        #f5f0e8;
+      --bg2:       #ede6d8;
+      --bg3:       #e4dccb;
+      --border:    #d4c9b0;
+      --border2:   #c4b89a;
+      --espresso:  #3b2a1a;
+      --brown:     #5c3d22;
+      --mid:       #8b6b47;
+      --light:     #b89b7a;
+      --gold:      #8b5e2e;
+      --gold2:     #a06d35;
+      --cream:     #faf7f2;
+      --text:      #2c1f0f;
+      --text2:     #5c3d22;
+      --text3:     #8b6b47;
+      --green:     #4a7a4a;
+      --red:       #8b3a2a;
+    }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; background: #0f0e0c; }
-    body { -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
+    html, body { height: 100%; background: var(--bg); }
+    body { -webkit-font-smoothing: antialiased; overscroll-behavior: none; font-family: 'Lora', Georgia, serif; color: var(--text); }
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #2a2820; border-radius: 2px; }
-    textarea, input { -webkit-appearance: none; appearance: none; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    textarea, input, button { -webkit-appearance: none; appearance: none; font-family: inherit; }
 
-    .modal-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88);
-      z-index: 1000; align-items: center; justify-content: center; padding: 24px;
-    }
-    .modal-overlay.show { display: flex; }
-    .modal-box {
-      background: #14120e; border: 1px solid #3a3628; border-radius: 12px;
-      padding: 32px 28px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto;
-    }
-    .modal-box h2 {
-      font-family: 'Cinzel', serif; font-size: 15px; color: #c8a96e;
-      letter-spacing: 0.15em; margin-bottom: 10px; text-transform: uppercase;
-    }
-    .modal-box p { font-family: 'Lora', serif; font-size: 13px; color: #7a6f5e; line-height: 1.75; margin-bottom: 16px; }
-    .modal-box a { color: #c8a96e; }
-    .modal-input {
-      width: 100%; padding: 12px 14px; background: #0f0e0c;
-      border: 1px solid #2a2820; border-radius: 6px; color: #e8e0d0;
-      font-family: monospace; font-size: 13px; outline: none; margin-bottom: 12px;
-    }
-    .modal-btn {
-      width: 100%; padding: 12px; background: #c8a96e; color: #0f0e0c;
-      border: none; border-radius: 6px; font-family: 'Cinzel', serif;
-      font-size: 11px; letter-spacing: 0.15em; cursor: pointer;
-      text-transform: uppercase; margin-bottom: 8px;
-    }
-    .modal-skip {
-      width: 100%; padding: 8px; background: transparent; color: #4a4235;
-      border: 1px solid #2a2820; border-radius: 6px; font-family: 'Lora', serif;
-      font-size: 12px; cursor: pointer; font-style: italic;
-    }
-    .modal-note { margin-top: 10px; font-family: 'Lora', serif; font-size: 11px; color: #3a3628; text-align: center; font-style: italic; }
-    .step-label {
-      font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em;
-      color: #4a4235; text-transform: uppercase; margin-bottom: 14px;
-      padding-bottom: 10px; border-bottom: 1px solid #1e1c18;
-    }
-    .code-block {
-      background: #0a0908; border: 1px solid #2a2820; border-radius: 6px;
-      padding: 14px; font-family: monospace; font-size: 11px; color: #a09070;
-      white-space: pre-wrap; word-break: break-all; margin-bottom: 12px;
-      line-height: 1.6; max-height: 160px; overflow-y: auto;
-    }
-    .copy-btn {
-      width: 100%; padding: 8px; background: transparent; border: 1px solid #3a3628;
-      color: #c8a96e; border-radius: 5px; font-family: 'Cinzel', serif;
-      font-size: 10px; letter-spacing: 0.15em; cursor: pointer; text-transform: uppercase; margin-bottom: 16px;
-    }
-    .sync-pill {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.12em;
-      text-transform: uppercase; padding: 4px 9px; border-radius: 10px; cursor: pointer; border: none;
-    }
-    .sync-pill.on  { color: #7a9e7a; background: #0e1a0e; border: 1px solid #1e3a1e; }
-    .sync-pill.off { color: #4a4235; background: transparent; border: 1px solid #2a2820; }
-    .sync-pill.err { color: #c07070; background: #1e0e0e; border: 1px solid #3a1e1e; }
+    /* ── MODALS ───────────────────────────────────── */
+    .overlay { display:none; position:fixed; inset:0; background:rgba(44,31,15,0.55); z-index:1000; align-items:center; justify-content:center; padding:20px; }
+    .overlay.show { display:flex; }
+    .modal { background:var(--cream); border:1px solid var(--border); border-radius:14px; padding:28px 26px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(44,31,15,0.18); }
+    .modal h2 { font-family:'Cinzel',serif; font-size:14px; color:var(--gold); letter-spacing:0.18em; margin-bottom:10px; text-transform:uppercase; }
+    .modal p  { font-size:13px; color:var(--text3); line-height:1.75; margin-bottom:14px; }
+    .modal a  { color:var(--gold2); }
+    .m-input  { width:100%; padding:11px 14px; background:var(--bg); border:1px solid var(--border); border-radius:7px; color:var(--text); font-size:13px; outline:none; margin-bottom:12px; transition:border-color 0.2s; }
+    .m-input:focus { border-color:var(--border2); }
+    .m-btn    { width:100%; padding:12px; background:var(--espresso); color:var(--cream); border:none; border-radius:7px; font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.15em; cursor:pointer; text-transform:uppercase; margin-bottom:8px; }
+    .m-btn:hover { background:var(--brown); }
+    .m-skip   { width:100%; padding:8px; background:transparent; color:var(--text3); border:1px solid var(--border); border-radius:7px; font-size:12px; cursor:pointer; font-style:italic; }
+    .m-note   { margin-top:10px; font-size:11px; color:var(--light); text-align:center; font-style:italic; }
+    .step-lbl { font-family:'Cinzel',serif; font-size:9px; letter-spacing:0.2em; color:var(--light); text-transform:uppercase; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+    .code-blk { background:var(--bg2); border:1px solid var(--border); border-radius:6px; padding:12px; font-family:monospace; font-size:11px; color:var(--text2); white-space:pre-wrap; word-break:break-all; margin-bottom:10px; line-height:1.6; max-height:150px; overflow-y:auto; }
+    .copy-btn { width:100%; padding:8px; background:transparent; border:1px solid var(--border2); color:var(--gold); border-radius:5px; font-family:'Cinzel',serif; font-size:10px; letter-spacing:0.15em; cursor:pointer; text-transform:uppercase; margin-bottom:14px; }
+
+    /* ── PILLS ────────────────────────────────────── */
+    .pill { display:inline-flex; align-items:center; gap:5px; font-family:'Cinzel',serif; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; padding:4px 10px; border-radius:20px; border:none; cursor:pointer; }
+    .pill-green { color:var(--green); background:#eaf3ea; border:1px solid #c0d8c0; }
+    .pill-off   { color:var(--light); background:transparent; border:1px solid var(--border); }
+    .pill-red   { color:var(--red); background:#f8ecea; border:1px solid #e0c0bc; }
+
+    /* ── NAV ──────────────────────────────────────── */
+    .nav-btn { padding:8px 14px; border-radius:7px; border:1px solid var(--border); background:transparent; color:var(--text3); font-family:'Cinzel',serif; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; cursor:pointer; transition:all 0.15s; }
+    .nav-btn.active { background:var(--espresso); color:var(--cream); border-color:var(--espresso); }
+
+    /* ── MOOD DOTS ────────────────────────────────── */
+    .mood-dot { width:36px; height:36px; border-radius:50%; border:2px solid var(--border); background:transparent; cursor:pointer; font-size:17px; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+    .mood-dot.sel { border-color:var(--gold); background:var(--bg2); transform:scale(1.15); }
+
+    /* ── CARDS ────────────────────────────────────── */
+    .entry-card { padding:16px 18px; border-radius:10px; margin-bottom:10px; cursor:pointer; border:1px solid var(--border); background:var(--cream); transition:all 0.15s; }
+    .entry-card:hover { border-color:var(--border2); }
+    .entry-card.sel { border-color:var(--gold); background:var(--bg); }
+
+    /* ── TEXTAREA ─────────────────────────────────── */
+    .write-area { width:100%; min-height:260px; background:var(--cream); border:1px solid var(--border); border-radius:10px; padding:20px 22px; color:var(--text); font-size:17px; line-height:1.8; font-family:'Lora',Georgia,serif; resize:vertical; outline:none; caret-color:var(--gold); transition:border-color 0.2s; }
+    .write-area:focus { border-color:var(--border2); }
+    .write-area::placeholder { color:var(--light); }
+
+    /* ── BUTTONS ──────────────────────────────────── */
+    .btn-primary { padding:12px 28px; background:var(--espresso); color:var(--cream); border:none; border-radius:7px; font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.15em; text-transform:uppercase; cursor:pointer; transition:all 0.2s; }
+    .btn-primary:disabled { background:var(--border); color:var(--light); cursor:default; }
+    .btn-primary:not(:disabled):hover { background:var(--brown); }
+    .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--text3); padding:7px 14px; border-radius:6px; font-size:11px; font-family:'Cinzel',serif; letter-spacing:0.12em; text-transform:uppercase; cursor:pointer; }
+    .btn-ghost:hover { border-color:var(--border2); }
+
+    /* ── COACHING BOX ─────────────────────────────── */
+    .coach-box { background:var(--bg2); border-left:3px solid var(--gold); border-radius:0 10px 10px 0; padding:20px 22px; font-size:15px; line-height:1.85; color:var(--text2); white-space:pre-wrap; }
+
+    /* ── STREAK ───────────────────────────────────── */
+    .streak-badge { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; background:var(--bg2); border:1px solid var(--border); border-radius:20px; font-family:'Cinzel',serif; font-size:10px; color:var(--gold); letter-spacing:0.1em; }
+
+    /* ── GOAL CARD ────────────────────────────────── */
+    .goal-card { background:var(--cream); border:1px solid var(--border); border-radius:10px; padding:16px 18px; margin-bottom:10px; }
+    .goal-card h3 { font-family:'Cinzel',serif; font-size:12px; color:var(--espresso); letter-spacing:0.1em; margin-bottom:6px; }
+
+    /* ── FUTURE LETTER ────────────────────────────── */
+    .letter-card { background:var(--cream); border:1px solid var(--gold); border-radius:10px; padding:18px 20px; margin-bottom:10px; }
+
+    /* ── SECTION LABEL ────────────────────────────── */
+    .sec-label { font-family:'Cinzel',serif; font-size:9px; letter-spacing:0.22em; color:var(--light); text-transform:uppercase; margin-bottom:14px; }
+
+    /* ── ERROR ────────────────────────────────────── */
+    .err-box { margin-top:12px; padding:10px 14px; background:#f8ecea; border-radius:7px; color:var(--red); font-size:13px; border:1px solid #e8c8c0; }
+
+    /* ── PROMPT BOX ───────────────────────────────── */
+    .prompt-box { padding:14px 18px; border-left:2px solid var(--gold); background:var(--bg2); border-radius:0 8px 8px 0; color:var(--gold2); font-size:15px; font-style:italic; line-height:1.65; margin-bottom:18px; }
+
+    /* ── IMAGE PREVIEW ────────────────────────────── */
+    .img-preview { width:100%; max-height:200px; object-fit:cover; border-radius:8px; margin-bottom:12px; border:1px solid var(--border); }
+
+    /* ── CHAT BUBBLE (goal) ───────────────────────── */
+    .chat-user { background:var(--espresso); color:var(--cream); border-radius:12px 12px 4px 12px; padding:10px 14px; font-size:14px; line-height:1.6; margin-bottom:8px; align-self:flex-end; max-width:85%; }
+    .chat-ai   { background:var(--bg2); border:1px solid var(--border); color:var(--text2); border-radius:12px 12px 12px 4px; padding:10px 14px; font-size:14px; line-height:1.6; margin-bottom:8px; align-self:flex-start; max-width:85%; white-space:pre-wrap; }
   </style>
 </head>
 <body>
 
 <!-- API Key Modal -->
-<div id="api-modal" class="modal-overlay">
-  <div class="modal-box">
+<div id="api-modal" class="overlay">
+  <div class="modal">
     <h2>Connect Your Journal</h2>
-    <p>You need an Anthropic API key to power coaching. Get one at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Stored only in this browser, never sent anywhere else.</p>
-    <input id="api-key-input" class="modal-input" type="password" placeholder="sk-ant-..." />
-    <button id="api-key-save" class="modal-btn">Save & Start Journaling</button>
-    <p class="modal-note">Stays on this device only</p>
+    <p>You need an Anthropic API key to power coaching. Get one at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Stored only in this browser.</p>
+    <input id="api-key-input" class="m-input" type="password" placeholder="sk-ant-..."/>
+    <button id="api-key-save" class="m-btn">Save & Start Journaling</button>
+    <p class="m-note">Never leaves this device</p>
   </div>
 </div>
 
-<!-- Google Sheets Setup Modal -->
-<div id="sheets-modal" class="modal-overlay">
-  <div class="modal-box" style="max-width:560px;">
-
-    <div id="s-step-1">
-      <div class="step-label">Step 1 of 3 — Create your Google Sheet</div>
+<!-- Sheets Setup Modal -->
+<div id="sheets-modal" class="overlay">
+  <div class="modal" style="max-width:560px">
+    <div id="s1">
+      <div class="step-lbl">Step 1 of 3 — Create your Google Sheet</div>
       <h2>Auto-Backup to Google Sheets</h2>
-      <p>Every entry will automatically save to a Google Sheet in your Drive — accessible from iPhone, iPad, or any browser. Zero chance of losing your journal.</p>
-      <p>
-        <strong style="color:#e8e0d0">1.</strong> Go to <a href="https://sheets.new" target="_blank">sheets.new</a> to create a blank spreadsheet.<br/><br/>
-        <strong style="color:#e8e0d0">2.</strong> Name it something like <em>"My Journal"</em>.<br/><br/>
-        <strong style="color:#e8e0d0">3.</strong> Click <strong style="color:#e8e0d0">Extensions → Apps Script</strong> in the top menu.
-      </p>
-      <button class="modal-btn" onclick="goStep(2)">Done — I'm in Apps Script →</button>
-      <button class="modal-skip" onclick="closeSheets()">Skip for now</button>
+      <p>Every entry, goal, and letter auto-saves to Google Sheets — accessible from any device.</p>
+      <p><strong>1.</strong> Go to <a href="https://sheets.new" target="_blank">sheets.new</a> and create a blank sheet.<br/><br/><strong>2.</strong> Name it <em>"My Journal"</em>.<br/><br/><strong>3.</strong> Click <strong>Extensions → Apps Script</strong>.</p>
+      <button class="m-btn" onclick="goStep(2)">Done — I'm in Apps Script →</button>
+      <button class="m-skip" onclick="closeSheets()">Skip for now</button>
     </div>
-
-    <div id="s-step-2" style="display:none">
-      <div class="step-label">Step 2 of 3 — Add the bridge script</div>
-      <h2>Paste This Script</h2>
-      <p>
-        <strong style="color:#e8e0d0">1.</strong> Delete everything in the Apps Script editor.<br/><br/>
-        <strong style="color:#e8e0d0">2.</strong> Paste the code below.<br/><br/>
-        <strong style="color:#e8e0d0">3.</strong> Click <strong style="color:#e8e0d0">Save 💾</strong>, then <strong style="color:#e8e0d0">Deploy → New deployment</strong>.<br/><br/>
-        <strong style="color:#e8e0d0">4.</strong> Set <em>Execute as</em>: <strong style="color:#e8e0d0">Me</strong> · <em>Who has access</em>: <strong style="color:#e8e0d0">Anyone</strong>.<br/><br/>
-        <strong style="color:#e8e0d0">5.</strong> Click Deploy and <strong style="color:#e8e0d0">copy the Web App URL</strong>.
-      </p>
-      <div class="code-block" id="script-display"></div>
-      <button class="copy-btn" id="copy-script-btn">⧉ Copy script to clipboard</button>
-      <button class="modal-btn" onclick="goStep(3)">Done — I have my Web App URL →</button>
-      <button class="modal-skip" onclick="goStep(1)">← Back</button>
+    <div id="s2" style="display:none">
+      <div class="step-lbl">Step 2 of 3 — Paste the script</div>
+      <h2>Add the Bridge Script</h2>
+      <p><strong>1.</strong> Delete everything in the editor.<br/><br/><strong>2.</strong> Paste the code below.<br/><br/><strong>3.</strong> Save 💾 → Deploy → New deployment.<br/><br/><strong>4.</strong> Execute as: <strong>Me</strong> · Who has access: <strong>Anyone</strong>.<br/><br/><strong>5.</strong> Deploy and copy the Web App URL.</p>
+      <div class="code-blk" id="script-display"></div>
+      <button class="copy-btn" id="copy-script-btn">⧉ Copy script</button>
+      <button class="m-btn" onclick="goStep(3)">Done — I have my URL →</button>
+      <button class="m-skip" onclick="goStep(1)">← Back</button>
     </div>
-
-    <div id="s-step-3" style="display:none">
-      <div class="step-label">Step 3 of 3 — Connect</div>
+    <div id="s3" style="display:none">
+      <div class="step-lbl">Step 3 of 3 — Connect</div>
       <h2>Paste Your Web App URL</h2>
-      <p>Paste the deployment URL from Google Apps Script. It starts with <em>https://script.google.com/macros/s/…</em></p>
-      <input id="sheets-url-input" class="modal-input" type="url" placeholder="https://script.google.com/macros/s/..." />
-      <button class="modal-btn" id="sheets-save-btn">Connect Google Sheets →</button>
-      <button class="modal-skip" onclick="goStep(2)">← Back</button>
-      <p class="modal-note">Entries will auto-backup after every save</p>
+      <p>Starts with <em>https://script.google.com/macros/s/…</em></p>
+      <input id="sheets-url-input" class="m-input" type="url" placeholder="https://script.google.com/macros/s/..."/>
+      <button class="m-btn" id="sheets-save-btn">Connect Google Sheets →</button>
+      <button class="m-skip" onclick="goStep(2)">← Back</button>
     </div>
-
   </div>
 </div>
 
 <div id="root"></div>
 
 <script>
-  const APIK  = 'jrnl_api_key';
+  const APIK   = 'jrnl_api_key';
   const SHEETK = 'jrnl_sheets_url';
-
   window.getApiKey    = () => localStorage.getItem(APIK)   || '';
   window.getSheetsUrl = () => localStorage.getItem(SHEETK) || '';
-
-  window.checkApiKey = () => {
-    if (!window.getApiKey()) document.getElementById('api-modal').classList.add('show');
-  };
+  window.checkApiKey  = () => { if (!window.getApiKey()) document.getElementById('api-modal').classList.add('show'); };
 
   document.getElementById('api-key-save').onclick = () => {
     const v = document.getElementById('api-key-input').value.trim();
-    if (!v.startsWith('sk-')) { document.getElementById('api-key-input').style.borderColor='#a05050'; return; }
+    if (!v.startsWith('sk-')) { document.getElementById('api-key-input').style.borderColor='#c06050'; return; }
     localStorage.setItem(APIK, v);
     document.getElementById('api-modal').classList.remove('show');
   };
@@ -164,78 +185,99 @@
   if (data.action === 'save') {
     var sheet = ss.getSheetByName('Entries') || ss.insertSheet('Entries');
     if (sheet.getLastRow() === 0) {
-      sheet.appendRow(['ID','Date','Display Date','Entry','Coaching Note','Saved At']);
-      sheet.getRange(1,1,1,6).setFontWeight('bold');
+      sheet.appendRow(['ID','Date','Display Date','Entry','Coaching Note','Mood','Photo','Saved At']);
+      sheet.getRange(1,1,1,8).setFontWeight('bold');
     }
     var rows = sheet.getDataRange().getValues();
     for (var i = 1; i < rows.length; i++) {
       if (rows[i][1] === data.entry.date) {
-        sheet.getRange(i+1,1,1,6).setValues([[
+        sheet.getRange(i+1,1,1,8).setValues([[
           data.entry.id, data.entry.date, data.entry.displayDate,
-          data.entry.text, data.entry.coachNote, new Date().toISOString()
+          data.entry.text, data.entry.coachNote, data.entry.mood||'',
+          data.entry.photo?'[photo]':'', new Date().toISOString()
         ]]);
-        return ContentService
-          .createTextOutput(JSON.stringify({ok:true}))
-          .setMimeType(ContentService.MimeType.JSON);
+        return out({ok:true});
       }
     }
-    sheet.appendRow([
-      data.entry.id, data.entry.date, data.entry.displayDate,
-      data.entry.text, data.entry.coachNote, new Date().toISOString()
-    ]);
-    return ContentService
-      .createTextOutput(JSON.stringify({ok:true}))
-      .setMimeType(ContentService.MimeType.JSON);
+    sheet.appendRow([data.entry.id, data.entry.date, data.entry.displayDate,
+      data.entry.text, data.entry.coachNote, data.entry.mood||'',
+      data.entry.photo?'[photo]':'', new Date().toISOString()]);
+    return out({ok:true});
+  }
+
+  if (data.action === 'saveGoals') {
+    var gs = ss.getSheetByName('Goals') || ss.insertSheet('Goals');
+    gs.clearContents();
+    gs.appendRow(['Goals JSON','Saved At']);
+    gs.appendRow([JSON.stringify(data.goals), new Date().toISOString()]);
+    return out({ok:true});
+  }
+
+  if (data.action === 'saveLetter') {
+    var ls = ss.getSheetByName('Letters') || ss.insertSheet('Letters');
+    if (ls.getLastRow() === 0) ls.appendRow(['ID','Written','Deliver On','Text','Opened']);
+    var lr = ls.getDataRange().getValues();
+    for (var i = 1; i < lr.length; i++) {
+      if (lr[i][0] === data.letter.id) {
+        ls.getRange(i+1,1,1,5).setValues([[data.letter.id,data.letter.written,data.letter.deliverOn,data.letter.text,data.letter.opened||false]]);
+        return out({ok:true});
+      }
+    }
+    ls.appendRow([data.letter.id,data.letter.written,data.letter.deliverOn,data.letter.text,false]);
+    return out({ok:true});
   }
 
   if (data.action === 'load') {
-    var sheet = ss.getSheetByName('Entries');
-    if (!sheet || sheet.getLastRow() <= 1) {
-      return ContentService
-        .createTextOutput(JSON.stringify({entries:[]}))
-        .setMimeType(ContentService.MimeType.JSON);
+    var result = {};
+    var es = ss.getSheetByName('Entries');
+    result.entries = [];
+    if (es && es.getLastRow() > 1) {
+      var er = es.getDataRange().getValues();
+      for (var i = 1; i < er.length; i++) {
+        if (er[i][1]) result.entries.push({id:er[i][0],date:er[i][1],displayDate:er[i][2],text:er[i][3],coachNote:er[i][4],mood:er[i][5]});
+      }
     }
-    var rows = sheet.getDataRange().getValues();
-    var entries = [];
-    for (var i = 1; i < rows.length; i++) {
-      if (rows[i][1]) entries.push({
-        id: rows[i][0], date: rows[i][1], displayDate: rows[i][2],
-        text: rows[i][3], coachNote: rows[i][4]
-      });
+    var gs2 = ss.getSheetByName('Goals');
+    result.goals = [];
+    if (gs2 && gs2.getLastRow() > 1) {
+      try { result.goals = JSON.parse(gs2.getRange(2,1).getValue()); } catch(x){}
     }
-    return ContentService
-      .createTextOutput(JSON.stringify({entries:entries}))
-      .setMimeType(ContentService.MimeType.JSON);
+    var ls2 = ss.getSheetByName('Letters');
+    result.letters = [];
+    if (ls2 && ls2.getLastRow() > 1) {
+      var llr = ls2.getDataRange().getValues();
+      for (var i = 1; i < llr.length; i++) {
+        if (llr[i][0]) result.letters.push({id:llr[i][0],written:llr[i][1],deliverOn:llr[i][2],text:llr[i][3],opened:llr[i][4]});
+      }
+    }
+    return out(result);
+  }
+
+  return out({ok:false});
+  function out(obj) {
+    return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
   }
 }
 function doGet(e) { return doPost(e); }`;
 
   document.getElementById('script-display').textContent = APPS_SCRIPT;
-
   document.getElementById('copy-script-btn').onclick = () => {
     navigator.clipboard.writeText(APPS_SCRIPT).then(() => {
       const b = document.getElementById('copy-script-btn');
       b.textContent = '✓ Copied!';
-      setTimeout(() => b.textContent = '⧉ Copy script to clipboard', 2000);
+      setTimeout(() => b.textContent = '⧉ Copy script', 2000);
     });
   };
-
-  window.goStep = n => {
-    [1,2,3].forEach(i => document.getElementById('s-step-'+i).style.display = i===n?'block':'none');
-  };
+  window.goStep = n => [1,2,3].forEach(i => document.getElementById('s'+i).style.display = i===n?'block':'none');
   window.closeSheets = () => document.getElementById('sheets-modal').classList.remove('show');
   window.openSheets  = () => {
     document.getElementById('sheets-modal').classList.add('show');
-    const existing = window.getSheetsUrl();
-    goStep(existing ? 3 : 1);
-    if (existing) document.getElementById('sheets-url-input').value = existing;
+    goStep(window.getSheetsUrl() ? 3 : 1);
+    if (window.getSheetsUrl()) document.getElementById('sheets-url-input').value = window.getSheetsUrl();
   };
-
   document.getElementById('sheets-save-btn').onclick = () => {
     const v = document.getElementById('sheets-url-input').value.trim();
-    if (!v.startsWith('https://script.google.com')) {
-      document.getElementById('sheets-url-input').style.borderColor='#a05050'; return;
-    }
+    if (!v.startsWith('https://script.google.com')) { document.getElementById('sheets-url-input').style.borderColor='#c06050'; return; }
     localStorage.setItem(SHEETK, v);
     closeSheets();
     window.__sheetsConnected && window.__sheetsConnected();
@@ -243,336 +285,730 @@ function doGet(e) { return doPost(e); }`;
 </script>
 
 <script type="text/babel">
-  const { useState, useEffect } = React;
+const { useState, useEffect, useRef, useCallback } = React;
 
-  const PROMPTS = [
-    "What's one thing you want to move forward on today?",
-    "What's been weighing on you lately — and what would it feel like to let it go?",
-    "Where do you feel most alive right now? Where do you feel stuck?",
-    "What would your best self do today that your current self is avoiding?",
-    "What's a goal you keep circling back to? What's actually stopping you?",
-    "What does success look like for you this week — in your own words?",
-    "What are you grateful for, and what do you want more of?",
-    "If you could change one habit starting today, what would it be and why?",
-  ];
+const PROMPTS = [
+  "What's one thing you want to move forward on today?",
+  "What's been weighing on you lately — and what would it feel like to let it go?",
+  "Where do you feel most alive right now? Where do you feel stuck?",
+  "What would your best self do today that your current self is avoiding?",
+  "What's a goal you keep circling back to? What's actually stopping you?",
+  "What does success look like for you this week — in your own words?",
+  "What are you grateful for, and what do you want more of?",
+  "If you could change one habit starting today, what would it be and why?",
+];
+const MOODS = ["😔","😕","😐","🙂","😄"];
 
-  const LOCAL_KEY = "jrnl_entries_v2";
-  const getToday    = () => new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
-  const getTodayKey = () => new Date().toISOString().split("T")[0];
-  const loadLocal   = () => { try { return JSON.parse(localStorage.getItem(LOCAL_KEY)||"[]"); } catch { return []; } };
-  const saveLocal   = e  => localStorage.setItem(LOCAL_KEY, JSON.stringify(e));
+const getToday    = () => new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+const getTodayKey = () => new Date().toISOString().split("T")[0];
+const LOC = {
+  entries: "jrnl_entries_v3",
+  goals:   "jrnl_goals_v1",
+  letters: "jrnl_letters_v1",
+  streak:  "jrnl_streak_v1",
+  memory:  "jrnl_memory_v1",
+};
+const ld = k => { try { return JSON.parse(localStorage.getItem(k)||"[]"); } catch { return []; } };
+const sv = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 
-  async function sheetsReq(payload) {
-    const url = window.getSheetsUrl();
-    if (!url) return null;
+function calcStreak(entries) {
+  if (!entries.length) return 0;
+  const dates = [...new Set(entries.map(e=>e.date))].sort().reverse();
+  const today = getTodayKey();
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const yd = yesterday.toISOString().split("T")[0];
+  if (dates[0] !== today && dates[0] !== yd) return 0;
+  let streak = 1;
+  for (let i = 1; i < dates.length; i++) {
+    const a = new Date(dates[i-1]), b = new Date(dates[i]);
+    const diff = (a-b)/(1000*60*60*24);
+    if (Math.round(diff) === 1) streak++;
+    else break;
+  }
+  return streak;
+}
+
+async function sheetsReq(payload) {
+  const url = window.getSheetsUrl();
+  if (!url) return null;
+  try {
+    const r = await fetch(url, { method:"POST", body:JSON.stringify(payload) });
+    return await r.json();
+  } catch { return null; }
+}
+
+async function callClaude(system, user, imageB64=null) {
+  const key = window.getApiKey();
+  if (!key) { window.checkApiKey(); throw new Error("No API key"); }
+  const content = imageB64
+    ? [{ type:"image", source:{type:"base64",media_type:"image/jpeg",data:imageB64} }, { type:"text", text:user }]
+    : user;
+  const r = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true" },
+    body:JSON.stringify({ model:"claude-sonnet-4-5", max_tokens:1024, system, messages:[{role:"user",content}] }),
+  });
+  if (!r.ok) {
+    const e = await r.json();
+    if (r.status===401) { window.checkApiKey(); throw new Error("Invalid API key"); }
+    throw new Error(e.error?.message||"API error");
+  }
+  const d = await r.json();
+  return d.content?.find(b=>b.type==="text")?.text || "No response.";
+}
+
+/* ── GOAL CHAT ────────────────────────────────────────── */
+function GoalChat({ goals, onGoalsUpdate }) {
+  const [msgs, setMsgs]     = useState([{ role:"ai", text:"Let's clarify and strengthen your goals. Tell me about something important you're working toward — a career ambition, a personal change, a project, anything. What's on your mind?" }]);
+  const [input, setInput]   = useState("");
+  const [loading, setLoading] = useState(false);
+  const [err, setErr]       = useState("");
+  const bottomRef = useRef(null);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({behavior:"smooth"}); }, [msgs]);
+
+  async function send() {
+    if (!input.trim() || loading) return;
+    const userMsg = input.trim();
+    setInput(""); setLoading(true); setErr("");
+    const newMsgs = [...msgs, {role:"user",text:userMsg}];
+    setMsgs(newMsgs);
+    const history = newMsgs.map(m=>`${m.role==="user"?"User":"Coach"}: ${m.text}`).join("\n");
+    const currentGoals = goals.map((g,i)=>`${i+1}. ${g.title}: ${g.description}`).join("\n")||"None yet.";
+    const system = `You are a focused, warm executive coach helping someone define and refine their personal goals.
+
+Current saved goals:
+${currentGoals}
+
+Guidelines:
+- Ask clarifying questions to make goals specific, meaningful, and achievable
+- After gathering enough info, suggest a clear goal title (5 words max) and a 1-2 sentence description
+- When you have a goal ready to save, output it in this exact format on its own line:
+SAVE_GOAL: {"title":"...", "description":"...", "targetDate":"YYYY-MM-DD or null"}
+- Keep responses concise and conversational
+- You can help refine existing goals or create new ones`;
     try {
-      const r = await fetch(url, { method:"POST", body: JSON.stringify(payload) });
-      return await r.json();
-    } catch { return null; }
-  }
-
-  async function callClaude(system, user) {
-    const key = window.getApiKey();
-    if (!key) { window.checkApiKey(); throw new Error("No API key"); }
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "x-api-key": key,
-        "anthropic-version":"2023-06-01",
-        "anthropic-dangerous-direct-browser-access":"true",
-      },
-      body: JSON.stringify({ model:"claude-sonnet-4-5", max_tokens:1000, system, messages:[{role:"user",content:user}] }),
-    });
-    if (!r.ok) {
-      const e = await r.json();
-      if (r.status===401) { window.checkApiKey(); throw new Error("Invalid API key"); }
-      throw new Error(e.error?.message||"API error");
-    }
-    const d = await r.json();
-    return d.content?.find(b=>b.type==="text")?.text || "No response.";
-  }
-
-  function AskBox({onAsk, loading}) {
-    const [q,setQ] = useState("");
-    const go = () => { if(q.trim()){onAsk(q);setQ("");} };
-    return (
-      <div style={{display:"flex",gap:10}}>
-        <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}
-          placeholder="Ask about your entries…"
-          style={{flex:1,padding:"11px 16px",background:"#14120e",border:"1px solid #2a2820",borderRadius:6,color:"#e8e0d0",fontSize:15,fontFamily:"'Lora',serif",outline:"none"}} />
-        <button onClick={go} disabled={!q.trim()||loading}
-          style={{padding:"11px 18px",background:q.trim()?"#c8a96e":"#2a2820",color:q.trim()?"#0f0e0c":"#3a3628",border:"none",borderRadius:6,cursor:q.trim()?"pointer":"default",fontSize:13}}>Ask</button>
-      </div>
-    );
-  }
-
-  function App() {
-    const [view,setView]           = useState("write");
-    const [entry,setEntry]         = useState("");
-    const [entries,setEntries]     = useState([]);
-    const [coach,setCoach]         = useState("");
-    const [loading,setLoading]     = useState(false);
-    const [syncSt,setSyncSt]       = useState("idle"); // idle|syncing|ok|error
-    const [sheetOn,setSheetOn]     = useState(!!window.getSheetsUrl());
-    const [showPrmt,setShowPrmt]   = useState(false);
-    const [prompt]                 = useState(PROMPTS[new Date().getDay()%PROMPTS.length]);
-    const [selEntry,setSelEntry]   = useState(null);
-    const [search,setSearch]       = useState("");
-    const [saved,setSaved]         = useState(false);
-    const [err,setErr]             = useState("");
-
-    window.__sheetsConnected = () => { setSheetOn(true); loadAll(); };
-
-    async function loadAll() {
-      const local = loadLocal();
-      setEntries(local);
-      if (window.getSheetsUrl()) {
-        setSyncSt("syncing");
-        const res = await sheetsReq({action:"load"});
-        if (res?.entries?.length > 0) {
-          const byDate = {};
-          local.forEach(e => byDate[e.date]=e);
-          res.entries.forEach(e => byDate[e.date]=e);
-          const merged = Object.values(byDate);
-          setEntries(merged); saveLocal(merged); setSyncSt("ok");
-        } else if (res) { setSyncSt("ok"); }
-        else { setSyncSt("error"); }
+      const resp = await callClaude(system, history);
+      const saveMatch = resp.match(/SAVE_GOAL:\s*(\{.*?\})/s);
+      let displayText = resp.replace(/SAVE_GOAL:\s*\{.*?\}/s,"").trim();
+      if (saveMatch) {
+        try {
+          const g = JSON.parse(saveMatch[1]);
+          const updated = [...goals.filter(x=>x.title!==g.title), { ...g, id:Date.now() }];
+          onGoalsUpdate(updated);
+          displayText += displayText ? "\n\n✓ Goal saved!" : "✓ Goal saved!";
+        } catch {}
       }
+      setMsgs([...newMsgs, {role:"ai",text:displayText||resp}]);
+    } catch(e) { setErr(e.message); setMsgs([...newMsgs]); }
+    finally { setLoading(false); }
+  }
+
+  return (
+    <div>
+      <div style={{display:"flex",flexDirection:"column",gap:4,marginBottom:16,maxHeight:320,overflowY:"auto",padding:"4px 0"}}>
+        {msgs.map((m,i) => (
+          <div key={i} className={m.role==="user"?"chat-user":"chat-ai"}
+            style={{alignSelf:m.role==="user"?"flex-end":"flex-start"}}>
+            {m.text}
+          </div>
+        ))}
+        {loading && <div className="chat-ai" style={{alignSelf:"flex-start",color:"#8b6b47",fontStyle:"italic"}}>Thinking…</div>}
+        <div ref={bottomRef}/>
+      </div>
+      {err && <div className="err-box">{err}</div>}
+      <div style={{display:"flex",gap:8,marginTop:8}}>
+        <textarea value={input} onChange={e=>setInput(e.target.value)}
+          onKeyDown={e=>{ if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();} }}
+          placeholder="Type here… (Enter to send)"
+          rows={2}
+          style={{flex:1,padding:"10px 14px",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:7,color:"var(--text)",fontSize:14,fontFamily:"'Lora',serif",outline:"none",resize:"none"}}
+        />
+        <button onClick={send} disabled={!input.trim()||loading} className="btn-primary" style={{padding:"10px 18px"}}>Send</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── FUTURE LETTER ────────────────────────────────────── */
+function FutureLetter({ letters, onSave }) {
+  const [writing, setWriting] = useState(false);
+  const [text, setText]       = useState("");
+  const [days, setDays]       = useState(30);
+  const [selLetter, setSelLetter] = useState(null);
+  const [coachResp, setCoachResp] = useState("");
+  const [loading, setLoading] = useState(false);
+  const today = getTodayKey();
+
+  const dueLetter = letters.find(l => !l.opened && l.deliverOn <= today);
+
+  async function openLetter(l) {
+    setSelLetter(l);
+    if (!l.opened && l.deliverOn <= today) {
+      setLoading(true);
+      const allEntries = ld(LOC.entries);
+      const since = allEntries.filter(e=>e.date>=l.written).map(e=>`[${e.date}]: ${e.text.slice(0,200)}`).join("\n");
+      const sys = `You are a reflective coach. A person wrote a letter to their future self ${l.days||30} days ago. Now that the delivery date has arrived, reflect on their journey. Reference specific things from the letter and compare to their recent journal entries. Be warm, insightful, and personal.`;
+      try {
+        const r = await callClaude(sys, `Letter written:\n${l.text}\n\nJournal entries since then:\n${since||"No entries yet."}`);
+        setCoachResp(r);
+        const updated = letters.map(x=>x.id===l.id?{...x,opened:true}:x);
+        onSave(updated, {...l,opened:true});
+      } catch(e) { setCoachResp("Couldn't load reflection."); }
+      finally { setLoading(false); }
     }
+  }
 
-    useEffect(() => { window.checkApiKey(); loadAll(); }, []);
+  function saveLetter() {
+    if (!text.trim()) return;
+    const deliverDate = new Date();
+    deliverDate.setDate(deliverDate.getDate()+days);
+    const l = { id:Date.now(), written:today, deliverOn:deliverDate.toISOString().split("T")[0], text, days, opened:false };
+    onSave([...letters, l], l);
+    setText(""); setWriting(false);
+  }
 
-    const todayEntry = entries.find(e=>e.date===getTodayKey());
-    const filtered   = entries
-      .filter(e=>e.text.toLowerCase().includes(search.toLowerCase())||(e.coachNote||"").toLowerCase().includes(search.toLowerCase()))
-      .sort((a,b)=>b.date.localeCompare(a.date));
+  if (selLetter) return (
+    <div>
+      <button onClick={()=>{setSelLetter(null);setCoachResp("");}} style={{background:"transparent",border:"none",color:"var(--text3)",cursor:"pointer",fontSize:13,marginBottom:18,padding:0}}>← Back to Letters</button>
+      <div style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:"0.2em",color:"var(--light)",textTransform:"uppercase",marginBottom:6}}>
+        Written {selLetter.written} · Delivered {selLetter.deliverOn}
+      </div>
+      <div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:10,padding:"18px 20px",marginBottom:20,fontSize:15,lineHeight:1.8,color:"var(--text2)",fontStyle:"italic"}}>
+        {selLetter.text}
+      </div>
+      {selLetter.deliverOn <= today && (
+        <>
+          <div className="sec-label">✦ Coach Reflection</div>
+          {loading ? <div style={{color:"var(--light)",fontStyle:"italic"}}>Reading your journey…</div>
+            : <div className="coach-box">{coachResp||"Tap to load reflection."}</div>}
+        </>
+      )}
+      {selLetter.deliverOn > today && (
+        <div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:8,padding:"12px 16px",fontSize:13,color:"var(--text3)",fontStyle:"italic",textAlign:"center"}}>
+          This letter opens on {new Date(selLetter.deliverOn).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}
+        </div>
+      )}
+    </div>
+  );
 
-    async function doCoach(text, all) {
-      setLoading(true); setCoach(""); setErr(""); setView("coach");
-      const hist = all.slice(-5).map(e=>`[${e.date}]: ${e.text.slice(0,300)}`).join("\n\n");
-      const sys = `You are a warm, insightful personal coach. For each journal entry provide:
-1. A brief reflection or key insight (2-3 sentences)
+  return (
+    <div>
+      {dueLetter && (
+        <div style={{background:"#fef8ec",border:"1px solid var(--gold)",borderRadius:10,padding:"14px 18px",marginBottom:20,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{fontFamily:"'Cinzel',serif",fontSize:10,color:"var(--gold)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:4}}>✉ Letter ready to open</div>
+            <div style={{fontSize:13,color:"var(--text2)"}}>Written {dueLetter.written}</div>
+          </div>
+          <button className="btn-primary" style={{padding:"8px 16px",fontSize:10}} onClick={()=>openLetter(dueLetter)}>Open →</button>
+        </div>
+      )}
+
+      {!writing ? (
+        <button className="btn-ghost" onClick={()=>setWriting(true)} style={{marginBottom:20,width:"100%"}}>✉ Write a Letter to Future Me</button>
+      ) : (
+        <div style={{background:"var(--cream)",border:"1px solid var(--gold)",borderRadius:10,padding:"18px 20px",marginBottom:20}}>
+          <div className="sec-label">Write to your future self</div>
+          <textarea value={text} onChange={e=>setText(e.target.value)}
+            placeholder="Dear future me…"
+            style={{width:"100%",minHeight:180,background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:"14px 16px",color:"var(--text)",fontSize:15,lineHeight:1.8,fontFamily:"'Lora',serif",resize:"vertical",outline:"none",marginBottom:14}}
+          />
+          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14,flexWrap:"wrap"}}>
+            <span style={{fontSize:13,color:"var(--text3)"}}>Deliver in</span>
+            {[7,14,30,60,90,180,365].map(d=>(
+              <button key={d} onClick={()=>setDays(d)}
+                style={{padding:"5px 11px",borderRadius:5,border:"1px solid",borderColor:days===d?"var(--gold)":"var(--border)",background:days===d?"var(--espresso)":"transparent",color:days===d?"var(--cream)":"var(--text3)",fontSize:12,cursor:"pointer",fontFamily:"'Cinzel',serif"}}>
+                {d}d
+              </button>
+            ))}
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={saveLetter} disabled={!text.trim()} className="btn-primary">Seal & Save →</button>
+            <button onClick={()=>{setWriting(false);setText("");}} className="btn-ghost">Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {letters.length === 0 && !writing && (
+        <div style={{textAlign:"center",color:"var(--light)",fontStyle:"italic",marginTop:40,fontSize:14}}>No letters yet. Write your first one.</div>
+      )}
+
+      {[...letters].sort((a,b)=>b.written.localeCompare(a.written)).map(l=>(
+        <div key={l.id} className="letter-card" onClick={()=>openLetter(l)} style={{cursor:"pointer"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+            <div>
+              <div style={{fontFamily:"'Cinzel',serif",fontSize:10,color:"var(--gold)",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:2}}>
+                {l.opened?"✓ Opened":l.deliverOn<=today?"✉ Ready to open":"🔒 Sealed"}
+              </div>
+              <div style={{fontSize:12,color:"var(--text3)"}}>Delivers {new Date(l.deliverOn).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</div>
+            </div>
+            <span style={{fontSize:11,color:"var(--light)"}}>Written {l.written}</span>
+          </div>
+          <div style={{fontSize:14,color:"var(--text3)",overflow:"hidden",maxHeight:40,lineHeight:1.5,fontStyle:"italic"}}>
+            {l.deliverOn<=today ? l.text : "…sealed until delivery date…"}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── MAIN APP ─────────────────────────────────────────── */
+function App() {
+  const [view,setView]           = useState("write"); // write|coach|history|ask|goals|letters|memory
+  const [entry,setEntry]         = useState("");
+  const [mood,setMood]           = useState(null);
+  const [photo,setPhoto]         = useState(null); // base64
+  const [entries,setEntries]     = useState([]);
+  const [goals,setGoals]         = useState([]);
+  const [letters,setLetters]     = useState([]);
+  const [memory,setMemory]       = useState(() => { try { return JSON.parse(localStorage.getItem(LOC.memory)||"null"); } catch { return null; } });
+  const [coach,setCoach]         = useState("");
+  const [loading,setLoading]     = useState(false);
+  const [memLoading,setMemLoading] = useState(false);
+  const [syncSt,setSyncSt]       = useState("idle");
+  const [sheetOn,setSheetOn]     = useState(!!window.getSheetsUrl());
+  const [showPrmt,setShowPrmt]   = useState(false);
+  const [prompt]                 = useState(PROMPTS[new Date().getDay()%PROMPTS.length]);
+  const [selEntry,setSelEntry]   = useState(null);
+  const [search,setSearch]       = useState("");
+  const [saved,setSaved]         = useState(false);
+  const [err,setErr]             = useState("");
+  const [askQ,setAskQ]           = useState("");
+  const fileRef = useRef(null);
+
+  window.__sheetsConnected = () => { setSheetOn(true); loadAll(); };
+
+  async function loadAll() {
+    const localEntries = ld(LOC.entries);
+    const localGoals   = ld(LOC.goals);
+    const localLetters = ld(LOC.letters);
+    setEntries(localEntries); setGoals(localGoals); setLetters(localLetters);
+    if (window.getSheetsUrl()) {
+      setSyncSt("syncing");
+      const res = await sheetsReq({action:"load"});
+      if (res) {
+        if (res.entries?.length) {
+          const m = {}; localEntries.forEach(e=>m[e.date]=e); res.entries.forEach(e=>m[e.date]=e);
+          const merged = Object.values(m);
+          setEntries(merged); sv(LOC.entries, merged);
+        }
+        if (res.goals?.length) { setGoals(res.goals); sv(LOC.goals, res.goals); }
+        if (res.letters?.length) { setLetters(res.letters); sv(LOC.letters, res.letters); }
+        setSyncSt("ok");
+      } else setSyncSt("error");
+    }
+  }
+
+  useEffect(() => { window.checkApiKey(); loadAll(); }, []);
+
+  const todayEntry = entries.find(e=>e.date===getTodayKey());
+  const streak     = calcStreak(entries);
+  const filtered   = entries
+    .filter(e=>e.text.toLowerCase().includes(search.toLowerCase())||(e.coachNote||"").toLowerCase().includes(search.toLowerCase()))
+    .sort((a,b)=>b.date.localeCompare(a.date));
+
+  function handlePhoto(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => setPhoto(ev.target.result.split(",")[1]);
+    reader.readAsDataURL(file);
+  }
+
+  async function generateMemory(allEntries, allGoals) {
+    setMemLoading(true);
+    const recentEntries = [...allEntries].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30);
+    const entriesText = recentEntries.map(e=>`[${e.date}] mood:${e.mood!==null&&e.mood!==undefined?MOODS[e.mood]:"?"}: ${e.text}${e.coachNote?`\nCoach: ${e.coachNote}`:""}`).join("\n---\n");
+    const goalsText = allGoals.map(g=>`- ${g.title}: ${g.description}`).join("\n")||"No goals set yet.";
+    const sys = `You are an expert coach building a personal memory profile of someone based on their journal entries. Create a rich, concise profile that will help future coaching sessions be deeply personalized.`;
+    const prompt = `Based on these journal entries and goals, write a coach memory profile with these sections:
+
+**Who They Are**
+2-3 sentences capturing their personality, values, and how they show up in the world.
+
+**Patterns & Tendencies**  
+Key behavioral patterns — what they gravitate toward, what they avoid, how they handle pressure.
+
+**Blind Spots**
+1-2 honest observations about recurring patterns they may not fully see in themselves.
+
+**Growth Edge**
+Where they are stretching and growing right now.
+
+**What They Need From Coaching**
+How to best support them — direct challenge, gentle questions, accountability, reflection?
+
+**Mood & Energy Patterns**
+Any observable patterns in their emotional state over time.
+
+Goals:
+${goalsText}
+
+Recent entries (most recent first):
+${entriesText}
+
+Write in second person ("You tend to…", "You light up when…"). Be specific and personal, not generic.`;
+    try {
+      const result = await callClaude(sys, prompt);
+      const mem = { text: result, generatedAt: getTodayKey(), entryCount: allEntries.length };
+      setMemory(mem);
+      localStorage.setItem(LOC.memory, JSON.stringify(mem));
+      if (window.getSheetsUrl()) sheetsReq({action:"saveMemory", memory: mem});
+      return result;
+    } catch(e) { return null; }
+    finally { setMemLoading(false); }
+  }
+
+  async function doCoach(text, all) {
+    setLoading(true); setCoach(""); setErr(""); setView("coach");
+    const hist = all.slice(-5).map(e=>`[${e.date}]: ${e.text.slice(0,250)}`).join("\n");
+    const goalsText = goals.map((g,i)=>`${i+1}. ${g.title}: ${g.description}`).join("\n")||"No goals set yet.";
+    const memoryContext = memory?.text ? `\nCoach memory profile of this person:\n${memory.text}\n` : "";
+    const sys = `You are a warm, insightful personal coach. The person's active goals are:
+${goalsText}
+${memoryContext}
+For each journal entry provide:
+TITLE: [4-6 word title capturing the big idea of this entry]
+
+1. A brief reflection or key insight (2-3 sentences) — connect to their goals when relevant
 2. One focused coaching question to go deeper
 3. A specific micro-action or intention for today
 
-Be concise — 15 minutes total. Direct, personal, encouraging. No clichés.
-${hist?`\nRecent context:\n${hist}`:""}`;
-      try {
-        const r = await callClaude(sys, `Today's entry:\n\n${text}`);
-        setCoach(r); return r;
-      } catch(e) { setErr(e.message); return null; }
-      finally { setLoading(false); }
+Always start with the TITLE: line. Use your memory profile to make coaching personal and specific. Be concise — 15 min total. Direct, no clichés.
+${hist?`\nRecent entries:\n${hist}`:""}`;
+    try {
+      const raw = await callClaude(sys, `Today's entry (mood: ${mood!==null?MOODS[mood]:"not set"}):\n\n${text}`, photo||null);
+      const titleMatch = raw.match(/^TITLE:\s*(.+)/m);
+      const entryTitle = titleMatch ? titleMatch[1].trim() : null;
+      const cleanCoach = raw.replace(/^TITLE:.*\n?/m,"").trim();
+      setCoach(cleanCoach);
+      return { note: cleanCoach, title: entryTitle };
+    } catch(e) { setErr(e.message); return null; }
+    finally { setLoading(false); }
+  }
+
+  async function saveAndCoach() {
+    if (!entry.trim()) return;
+    const result = await doCoach(entry, entries);
+    const ne = { id:Date.now(), date:getTodayKey(), displayDate:getToday(), text:entry, coachNote:result?.note||"", title:result?.title||null, mood, photo };
+    const updated = [...entries.filter(e=>e.date!==getTodayKey()), ne];
+    setEntries(updated); sv(LOC.entries, updated);
+    setSaved(true); setTimeout(()=>setSaved(false),2500);
+    if (window.getSheetsUrl()) {
+      setSyncSt("syncing");
+      const r = await sheetsReq({action:"save",entry:{...ne,photo:!!ne.photo}});
+      setSyncSt(r?.ok?"ok":"error");
     }
+  }
 
-    async function saveAndCoach() {
-      if (!entry.trim()) return;
-      const note = await doCoach(entry, entries);
-      const ne = { id:Date.now(), date:getTodayKey(), displayDate:getToday(), text:entry, coachNote:note||"" };
-      const updated = [...entries.filter(e=>e.date!==getTodayKey()), ne];
-      setEntries(updated); saveLocal(updated);
-      setSaved(true); setTimeout(()=>setSaved(false),2500);
-      if (window.getSheetsUrl()) {
-        setSyncSt("syncing");
-        const r = await sheetsReq({action:"save",entry:ne});
-        setSyncSt(r?.ok?"ok":"error");
-      }
-    }
+  async function doAsk() {
+    if (!askQ.trim()) return;
+    setLoading(true); setCoach(""); setErr("");
+    const all = entries.map(e=>`[${e.date}] mood:${e.mood!==null&&e.mood!==undefined?MOODS[e.mood]:"?"}: ${e.text}${e.coachNote?`\nCoach:${e.coachNote}`:""}`).join("\n---\n");
+    const goalsText = goals.map(g=>`- ${g.title}: ${g.description}`).join("\n")||"No goals set.";
+    const sys = `You are a personal journal analyst and coach with access to all journal entries and goals.
 
-    async function askHistory(q) {
-      setLoading(true); setCoach(""); setErr("");
-      const all = entries.map(e=>`[${e.date}]: ${e.text}${e.coachNote?`\nCoach: ${e.coachNote}`:""}`).join("\n\n---\n\n");
-      const sys = `You are a personal journal analyst and coach with access to all journal entries. Answer questions about patterns, progress, themes, goals, and trends. Reference actual entries.\n\nAll entries:\n\n${all}`;
-      try { setCoach(await callClaude(sys,q)); }
-      catch(e) { setErr(e.message); }
-      finally { setLoading(false); }
-    }
+Goals:
+${goalsText}
 
-    const words = entry.trim().split(/\s+/).filter(Boolean).length;
+All entries:
+${all}
 
-    const SyncPill = () => {
-      if (!sheetOn) return <button className="sync-pill off" onClick={window.openSheets}>○ Connect Sheets</button>;
-      if (syncSt==="syncing") return <span className="sync-pill on">↻ Syncing…</span>;
-      if (syncSt==="ok")      return <span className="sync-pill on">✓ Backed up</span>;
-      if (syncSt==="error")   return <button className="sync-pill err" onClick={window.openSheets}>✗ Sync error</button>;
-      return <span className="sync-pill on">✓ Sheets on</span>;
-    };
+Answer questions about patterns, progress, mood trends, recurring themes, goal alignment. Be specific and reference actual dates/entries.`;
+    try { setCoach(await callClaude(sys, askQ)); }
+    catch(e) { setErr(e.message); }
+    finally { setLoading(false); }
+  }
 
-    const tab = (v,label) => (
-      <button onClick={()=>{setView(v);setCoach("");setErr("");}} style={{
-        padding:"8px 16px", borderRadius:6, border:"1px solid",
-        borderColor:(view===v||(view==="coach"&&v==="write"))?"#c8a96e":"#2a2820",
-        background:(view===v||(view==="coach"&&v==="write"))?"#1e1b15":"transparent",
-        color:(view===v||(view==="coach"&&v==="write"))?"#c8a96e":"#6b6355",
-        fontSize:11, letterSpacing:"0.12em", textTransform:"uppercase",
-        cursor:"pointer", fontFamily:"'Cinzel',serif",
-      }}>{label}</button>
-    );
+  function updateGoals(updated) {
+    setGoals(updated); sv(LOC.goals, updated);
+    if (window.getSheetsUrl()) sheetsReq({action:"saveGoals",goals:updated});
+  }
 
-    const S = { // shared styles shorthand
-      card:  { padding:"16px 18px", borderRadius:8, marginBottom:10, cursor:"pointer", transition:"all 0.15s" },
-      label: { fontFamily:"'Cinzel',serif", fontSize:10, letterSpacing:"0.22em", color:"#6b6355", textTransform:"uppercase", marginBottom:16 },
-    };
+  function updateLetters(updated, changed) {
+    setLetters(updated); sv(LOC.letters, updated);
+    if (window.getSheetsUrl() && changed) sheetsReq({action:"saveLetter",letter:changed});
+  }
 
-    return (
-      <div style={{minHeight:"100vh",background:"#0f0e0c",fontFamily:"'Lora',Georgia,serif",color:"#e8e0d0",display:"flex",flexDirection:"column"}}>
+  const SyncPill = () => {
+    if (!sheetOn) return <button className="pill pill-off" onClick={window.openSheets}>○ Connect Sheets</button>;
+    if (syncSt==="syncing") return <span className="pill pill-off">↻ Syncing</span>;
+    if (syncSt==="ok")      return <span className="pill pill-green">✓ Backed up</span>;
+    if (syncSt==="error")   return <button className="pill pill-red" onClick={window.openSheets}>✗ Sync error</button>;
+    return <span className="pill pill-green">✓ Sheets on</span>;
+  };
 
-        <header style={{
-          padding:"max(env(safe-area-inset-top,0px),20px) 24px 14px",
-          borderBottom:"1px solid #1e1c18", display:"flex", justifyContent:"space-between",
-          alignItems:"flex-start", position:"sticky", top:0, background:"#0f0e0c", zIndex:10,
-        }}>
-          <div>
-            <div style={{fontFamily:"'Cinzel',serif",fontSize:10,letterSpacing:"0.25em",color:"#4a4235",textTransform:"uppercase",marginBottom:4}}>Personal Journal</div>
-            <div style={{fontSize:13,color:"#7a6f5e",fontStyle:"italic"}}>{getToday()}</div>
-          </div>
-          <div style={{display:"flex",gap:6}}>{tab("write","Write")}{tab("history","Past")}{tab("ask","Ask")}</div>
-        </header>
+  const words = entry.trim().split(/\s+/).filter(Boolean).length;
+  const NAV = ["write","history","ask","goals","letters","memory"];
+  const NAV_LABELS = { write:"Write", history:"Past", ask:"Ask", goals:"Goals", letters:"Letters", memory:"Memory" };
 
-        <main style={{flex:1,padding:"22px 24px 48px",maxWidth:700,width:"100%",margin:"0 auto"}}>
+  return (
+    <div style={{minHeight:"100vh",background:"var(--bg)",display:"flex",flexDirection:"column"}}>
 
-          {/* ── WRITE / COACH ── */}
-          {(view==="write"||view==="coach") && <div>
-            {view==="write" && <>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18,flexWrap:"wrap"}}>
-                <button onClick={()=>setShowPrmt(!showPrmt)} style={{
-                  background:"transparent",border:"1px solid #2a2820",color:"#6b6355",
-                  padding:"5px 13px",borderRadius:5,fontSize:10,letterSpacing:"0.18em",
-                  textTransform:"uppercase",cursor:"pointer",fontFamily:"'Cinzel',serif",
-                }}>{showPrmt?"Hide prompt":"✦ Show prompt"}</button>
-                <SyncPill />
-                {saved && <span style={{color:"#7a9e7a",fontSize:12,fontStyle:"italic"}}>Saved ✓</span>}
+      {/* ── HEADER ── */}
+      <header style={{
+        padding:"max(env(safe-area-inset-top,0px),16px) 20px 12px",
+        borderBottom:"1px solid var(--border)", display:"flex", justifyContent:"space-between",
+        alignItems:"flex-start", position:"sticky", top:0, background:"var(--bg)", zIndex:10,
+        boxShadow:"0 1px 0 var(--border)",
+      }}>
+        <div>
+          <div style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:"0.28em",color:"var(--light)",textTransform:"uppercase",marginBottom:3}}>Personal Journal</div>
+          <div style={{fontSize:13,color:"var(--text3)",fontStyle:"italic"}}>{getToday()}</div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          {streak>0 && <span className="streak-badge">🔥 {streak} day{streak!==1?"s":""}</span>}
+        </div>
+      </header>
+
+      {/* ── NAV ── */}
+      <div style={{display:"flex",gap:6,padding:"10px 20px",borderBottom:"1px solid var(--border)",overflowX:"auto",background:"var(--cream)"}}>
+        {NAV.map(v => (
+          <button key={v} onClick={()=>{setView(v);setCoach("");setErr("");}}
+            className={`nav-btn${(view===v||(view==="coach"&&v==="write"))?" active":""}`}>
+            {NAV_LABELS[v]}
+          </button>
+        ))}
+      </div>
+
+      <main style={{flex:1,padding:"20px 20px 60px",maxWidth:720,width:"100%",margin:"0 auto"}}>
+
+        {/* ── WRITE ── */}
+        {(view==="write"||view==="coach") && <div>
+          {view==="write" && <>
+            {/* Mood */}
+            <div style={{marginBottom:18}}>
+              <div className="sec-label">How are you feeling?</div>
+              <div style={{display:"flex",gap:10}}>
+                {MOODS.map((m,i)=>(
+                  <button key={i} className={`mood-dot${mood===i?" sel":""}`} onClick={()=>setMood(mood===i?null:i)}>{m}</button>
+                ))}
               </div>
-
-              {showPrmt && (
-                <div style={{padding:"14px 18px",borderLeft:"2px solid #c8a96e",marginBottom:20,background:"#14120e",borderRadius:"0 6px 6px 0",color:"#c8a96e",fontSize:15,fontStyle:"italic",lineHeight:1.65}}>
-                  {prompt}
-                </div>
-              )}
-
-              {todayEntry && (
-                <div style={{padding:"10px 14px",background:"#14120e",borderRadius:6,marginBottom:16,fontSize:12,color:"#6b6355",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span>You wrote today already.</span>
-                  <button onClick={()=>{setEntry(todayEntry.text);setView("coach");setCoach(todayEntry.coachNote||"");}}
-                    style={{background:"transparent",border:"none",color:"#c8a96e",cursor:"pointer",fontSize:12}}>View coaching →</button>
-                </div>
-              )}
-
-              <textarea value={entry} onChange={e=>setEntry(e.target.value)}
-                placeholder="Start writing… no rules, no judgment. Just you and the page."
-                style={{width:"100%",minHeight:300,background:"#14120e",border:"1px solid #2a2820",borderRadius:8,padding:"20px 22px",color:"#e8e0d0",fontSize:18,lineHeight:1.8,fontFamily:"'Lora',Georgia,serif",resize:"vertical",outline:"none",caretColor:"#c8a96e"}}
-                onFocus={e=>e.target.style.borderColor="#3a3628"}
-                onBlur={e=>e.target.style.borderColor="#2a2820"}
-              />
-
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:14}}>
-                <span style={{fontSize:12,color:"#3a3628"}}>{words>0?`${words} word${words!==1?"s":""}`:""}</span>
-                <button onClick={saveAndCoach} disabled={!entry.trim()||loading} style={{
-                  padding:"12px 30px",
-                  background:entry.trim()?"#c8a96e":"#1e1c18",
-                  color:entry.trim()?"#0f0e0c":"#3a3628",
-                  border:"none",borderRadius:6,fontSize:11,letterSpacing:"0.15em",
-                  textTransform:"uppercase",cursor:entry.trim()?"pointer":"default",
-                  fontFamily:"'Cinzel',serif",transition:"all 0.2s",
-                }}>{loading?"Thinking…":"Save & Coach →"}</button>
-              </div>
-
-              {err && <div style={{marginTop:14,padding:"10px 14px",background:"#1e0e0e",borderRadius:6,color:"#c07070",fontSize:13}}>
-                {err==="Invalid API key"
-                  ? <><span>Invalid API key. </span><button onClick={window.checkApiKey} style={{background:"none",border:"none",color:"#c8a96e",cursor:"pointer",fontSize:13}}>Update →</button></>
-                  : err}
-              </div>}
-            </>}
-
-            {view==="coach" && <div>
-              <button onClick={()=>setView("write")} style={{background:"transparent",border:"none",color:"#6b6355",cursor:"pointer",fontSize:13,marginBottom:20,padding:0}}>← Back to writing</button>
-              {entry && <div style={{padding:"16px 20px",background:"#14120e",borderRadius:8,marginBottom:24,fontSize:15,lineHeight:1.75,color:"#7a6f5e",fontStyle:"italic",maxHeight:150,overflowY:"auto",borderLeft:"2px solid #2a2820"}}>{entry}</div>}
-              <div style={S.label}>✦ Coaching</div>
-              {loading
-                ? <div style={{color:"#6b6355",fontStyle:"italic",fontSize:15}}>Reading your entry…</div>
-                : <div style={{fontSize:16,lineHeight:1.85,color:"#d4c9b0",whiteSpace:"pre-wrap"}}>{coach}</div>}
-              {err && <div style={{marginTop:14,padding:"10px 14px",background:"#1e0e0e",borderRadius:6,color:"#c07070",fontSize:13}}>{err}</div>}
-            </div>}
-          </div>}
-
-          {/* ── HISTORY ── */}
-          {view==="history" && <div>
-            <div style={{display:"flex",gap:10,marginBottom:20,alignItems:"center",flexWrap:"wrap"}}>
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search entries…"
-                style={{flex:1,minWidth:160,padding:"11px 16px",background:"#14120e",border:"1px solid #2a2820",borderRadius:6,color:"#e8e0d0",fontSize:14,fontFamily:"'Lora',serif",outline:"none"}} />
-              <SyncPill />
             </div>
 
-            {filtered.length===0 && <div style={{color:"#3a3628",fontStyle:"italic",textAlign:"center",marginTop:60}}>No entries yet. Start writing.</div>}
+            {/* Toolbar */}
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14,flexWrap:"wrap"}}>
+              <button onClick={()=>setShowPrmt(!showPrmt)} className="btn-ghost" style={{fontSize:10}}>
+                {showPrmt?"Hide prompt":"✦ Prompt"}
+              </button>
+              <button onClick={()=>fileRef.current?.click()} className="btn-ghost" style={{fontSize:10}}>
+                📷 {photo?"Change photo":"Add photo"}
+              </button>
+              {photo && <button onClick={()=>setPhoto(null)} className="btn-ghost" style={{fontSize:10,color:"var(--red)"}}>✕ Remove photo</button>}
+              <SyncPill/>
+              {saved && <span style={{color:"var(--green)",fontSize:12,fontStyle:"italic"}}>Saved ✓</span>}
+              <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handlePhoto}/>
+            </div>
 
-            {filtered.map(e=>(
-              <div key={e.id} onClick={()=>setSelEntry(selEntry?.id===e.id?null:e)}
-                style={{...S.card,background:selEntry?.id===e.id?"#14120e":"transparent",border:"1px solid",borderColor:selEntry?.id===e.id?"#3a3628":"#1e1c18"}}>
-                <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
-                  <span style={{fontFamily:"'Cinzel',serif",fontSize:10,color:"#c8a96e",letterSpacing:"0.12em",textTransform:"uppercase"}}>{e.displayDate}</span>
-                  <span style={{fontSize:11,color:"#3a3628"}}>{e.text.trim().split(/\s+/).length} words</span>
+            {showPrmt && <div className="prompt-box">{prompt}</div>}
+            {photo && <img src={`data:image/jpeg;base64,${photo}`} className="img-preview" alt="attached"/>}
+
+            {todayEntry && (
+              <div style={{padding:"10px 14px",background:"var(--bg2)",borderRadius:7,marginBottom:14,fontSize:12,color:"var(--text3)",display:"flex",justifyContent:"space-between",alignItems:"center",border:"1px solid var(--border)"}}>
+                <span>{todayEntry.title ? `"${todayEntry.title}"` : "You wrote today already."}</span>
+                <button onClick={()=>{setEntry(todayEntry.text);setMood(todayEntry.mood);setView("coach");setCoach(todayEntry.coachNote||"");}}
+                  style={{background:"transparent",border:"none",color:"var(--gold2)",cursor:"pointer",fontSize:12}}>View coaching →</button>
+              </div>
+            )}
+
+            <textarea className="write-area" value={entry} onChange={e=>setEntry(e.target.value)}
+              placeholder="Start writing… no rules, no judgment. Just you and the page."/>
+
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:12}}>
+              <span style={{fontSize:12,color:"var(--light)"}}>{words>0?`${words} word${words!==1?"s":""}`:""}</span>
+              <button onClick={saveAndCoach} disabled={!entry.trim()||loading} className="btn-primary">
+                {loading?"Thinking…":"Save & Coach →"}
+              </button>
+            </div>
+            {err && <div className="err-box">{err==="Invalid API key"?<><span>Invalid API key. </span><button onClick={window.checkApiKey} style={{background:"none",border:"none",color:"var(--gold2)",cursor:"pointer",fontSize:13}}>Update →</button></>:err}</div>}
+          </>}
+
+          {view==="coach" && <div>
+            <button onClick={()=>setView("write")} style={{background:"transparent",border:"none",color:"var(--text3)",cursor:"pointer",fontSize:13,marginBottom:18,padding:0}}>← Back to writing</button>
+            {entry && <div style={{padding:"14px 18px",background:"var(--bg2)",borderRadius:9,marginBottom:20,fontSize:14,lineHeight:1.75,color:"var(--text3)",fontStyle:"italic",maxHeight:130,overflowY:"auto",borderLeft:"2px solid var(--border2)"}}>{entry}</div>}
+            <div className="sec-label">✦ Coaching</div>
+            {loading
+              ? <div style={{color:"var(--light)",fontStyle:"italic",fontSize:15}}>Reading your entry…</div>
+              : <div className="coach-box">{coach}</div>}
+            {err && <div className="err-box">{err}</div>}
+          </div>}
+        </div>}
+
+        {/* ── HISTORY ── */}
+        {view==="history" && <div>
+          <div style={{display:"flex",gap:8,marginBottom:18,alignItems:"center",flexWrap:"wrap"}}>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search entries…"
+              style={{flex:1,minWidth:160,padding:"10px 14px",background:"var(--cream)",border:"1px solid var(--border)",borderRadius:7,color:"var(--text)",fontSize:14,fontFamily:"'Lora',serif",outline:"none"}}/>
+            <SyncPill/>
+          </div>
+
+          {filtered.length===0 && <div style={{color:"var(--light)",fontStyle:"italic",textAlign:"center",marginTop:60}}>No entries yet.</div>}
+
+          {filtered.map(e=>(
+            <div key={e.id} className={`entry-card${selEntry?.id===e.id?" sel":""}`} onClick={()=>setSelEntry(selEntry?.id===e.id?null:e)}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4,alignItems:"flex-start"}}>
+                <div style={{flex:1,marginRight:10}}>
+                  {e.title && <div style={{fontFamily:"'Lora',serif",fontSize:15,fontWeight:500,color:"var(--espresso)",marginBottom:3,lineHeight:1.3}}>{e.title}</div>}
+                  <span style={{fontFamily:"'Cinzel',serif",fontSize:9,color:"var(--gold2)",letterSpacing:"0.1em",textTransform:"uppercase"}}>{e.displayDate}</span>
                 </div>
-                <div style={{fontSize:14,color:"#7a6f5e",lineHeight:1.55,overflow:"hidden",maxHeight:selEntry?.id===e.id?"none":44}}>{e.text}</div>
-                {selEntry?.id===e.id && e.coachNote && (
-                  <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid #2a2820",fontSize:14,color:"#a09070",lineHeight:1.75,fontStyle:"italic",whiteSpace:"pre-wrap"}}>
-                    <span style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:"0.2em",color:"#6b6355",textTransform:"uppercase",fontStyle:"normal",display:"block",marginBottom:8}}>✦ Coaching note</span>
-                    {e.coachNote}
+                <div style={{display:"flex",gap:8,alignItems:"center",flexShrink:0}}>
+                  {e.mood!==null&&e.mood!==undefined&&<span style={{fontSize:14}}>{MOODS[e.mood]}</span>}
+                  <span style={{fontSize:11,color:"var(--light)"}}>{e.text.trim().split(/\s+/).length}w</span>
+                </div>
+              </div>
+              <div style={{fontSize:14,color:"var(--text3)",lineHeight:1.55,overflow:"hidden",maxHeight:selEntry?.id===e.id?"none":42}}>{e.text}</div>
+              {selEntry?.id===e.id && e.coachNote && (
+                <div style={{marginTop:14,paddingTop:14,borderTop:"1px solid var(--border)",fontSize:14,color:"var(--text2)",lineHeight:1.75,fontStyle:"italic",whiteSpace:"pre-wrap"}}>
+                  <span className="sec-label" style={{display:"block",marginBottom:8}}>✦ Coaching note</span>
+                  {e.coachNote}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {entries.length>0 && (
+            <div style={{marginTop:24,textAlign:"center"}}>
+              <button className="btn-ghost" onClick={()=>{
+                const txt=[...entries].sort((a,b)=>a.date.localeCompare(b.date)).map(e=>`${e.displayDate}${e.mood!==null&&e.mood!==undefined?` · ${MOODS[e.mood]}`:""}\n${"─".repeat(38)}\n${e.text}${e.coachNote?`\n\n[Coaching]\n${e.coachNote}`:""}`).join("\n\n\n");
+                const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([txt],{type:"text/plain"})); a.download="my-journal.txt"; a.click();
+              }}>↓ Export all entries</button>
+            </div>
+          )}
+        </div>}
+
+        {/* ── ASK ── */}
+        {view==="ask" && <div>
+          <div style={{fontSize:13,color:"var(--text3)",marginBottom:18,lineHeight:1.7}}>
+            Ask anything about your journal history — patterns, mood trends, goal progress, recurring themes.
+          </div>
+          {entries.length===0
+            ? <div style={{color:"var(--light)",fontStyle:"italic"}}>No entries yet to analyse.</div>
+            : <>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:18}}>
+                  {["What goals keep coming up?","How has my mood shifted?","What am I avoiding?","How am I tracking against my goals?"].map(q=>(
+                    <button key={q} onClick={()=>{setAskQ(q);}} className="btn-ghost" style={{fontSize:12,fontStyle:"italic"}}>{q}</button>
+                  ))}
+                </div>
+                <div style={{display:"flex",gap:8,marginBottom:8}}>
+                  <textarea value={askQ} onChange={e=>setAskQ(e.target.value)}
+                    onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();doAsk();}}}
+                    placeholder="Ask about your entries… (Enter to send)"
+                    rows={2}
+                    style={{flex:1,padding:"10px 14px",background:"var(--cream)",border:"1px solid var(--border)",borderRadius:7,color:"var(--text)",fontSize:14,fontFamily:"'Lora',serif",outline:"none",resize:"none"}}
+                  />
+                  <button onClick={doAsk} disabled={!askQ.trim()||loading} className="btn-primary" style={{padding:"10px 16px"}}>Ask</button>
+                </div>
+                {loading && <div style={{color:"var(--light)",fontStyle:"italic",marginTop:16}}>Searching your history…</div>}
+                {err && <div className="err-box">{err}</div>}
+                {coach && !loading && <div className="coach-box" style={{marginTop:20}}>{coach}</div>}
+              </>}
+        </div>}
+
+        {/* ── GOALS ── */}
+        {view==="goals" && <div>
+          {goals.length>0 && (
+            <div style={{marginBottom:24}}>
+              <div className="sec-label">Active Goals</div>
+              {goals.map(g=>(
+                <div key={g.id} className="goal-card">
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                    <h3>{g.title}</h3>
+                    <button onClick={()=>{const u=goals.filter(x=>x.id!==g.id);updateGoals(u);}}
+                      style={{background:"none",border:"none",color:"var(--light)",cursor:"pointer",fontSize:13}}>✕</button>
+                  </div>
+                  <div style={{fontSize:13,color:"var(--text3)",lineHeight:1.6}}>{g.description}</div>
+                  {g.targetDate && <div style={{fontSize:11,color:"var(--light)",marginTop:6,fontStyle:"italic"}}>Target: {g.targetDate}</div>}
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="sec-label">Chat with your coach</div>
+          <GoalChat goals={goals} onGoalsUpdate={updateGoals}/>
+        </div>}
+
+        {/* ── MEMORY ── */}
+        {view==="memory" && <div>
+          <div style={{marginBottom:20}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12,flexWrap:"wrap",gap:10}}>
+              <div>
+                <div className="sec-label" style={{marginBottom:4}}>Coach Memory Profile</div>
+                {memory?.generatedAt && (
+                  <div style={{fontSize:11,color:"var(--light)",fontStyle:"italic"}}>
+                    Last updated {memory.generatedAt} · based on {memory.entryCount} entries
                   </div>
                 )}
               </div>
-            ))}
-
-            {entries.length>0 && <div style={{marginTop:24,textAlign:"center"}}>
-              <button onClick={()=>{
-                const txt=[...entries].sort((a,b)=>a.date.localeCompare(b.date)).map(e=>`${e.displayDate}\n${"─".repeat(40)}\n${e.text}${e.coachNote?`\n\n[Coaching]\n${e.coachNote}`:""}`).join("\n\n\n");
-                const a=document.createElement("a");
-                a.href=URL.createObjectURL(new Blob([txt],{type:"text/plain"}));
-                a.download="my-journal.txt"; a.click();
-              }} style={{background:"transparent",border:"1px solid #2a2820",color:"#6b6355",padding:"8px 18px",borderRadius:5,fontSize:11,cursor:"pointer",fontFamily:"'Cinzel',serif",letterSpacing:"0.15em",textTransform:"uppercase"}}>
-                ↓ Export all entries
+              <button
+                onClick={()=>generateMemory(entries,goals)}
+                disabled={memLoading||entries.length<3}
+                className="btn-primary"
+                style={{padding:"9px 18px",fontSize:10}}
+              >
+                {memLoading ? "Analysing…" : memory ? "↻ Refresh Memory" : "✦ Generate Memory"}
               </button>
-            </div>}
-          </div>}
-
-          {/* ── ASK ── */}
-          {view==="ask" && <div>
-            <div style={{fontSize:13,color:"#6b6355",marginBottom:20,lineHeight:1.7}}>
-              Ask anything about your journal history — patterns, progress, recurring themes, what your past self was working on.
             </div>
-            {entries.length===0
-              ? <div style={{color:"#3a3628",fontStyle:"italic"}}>No entries yet to analyse.</div>
-              : <>
-                  <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
-                    {["What goals keep coming up?","How has my mood shifted over time?","What am I avoiding?","What progress have I made?"].map(q=>(
-                      <button key={q} onClick={()=>askHistory(q)} style={{padding:"7px 13px",background:"transparent",border:"1px solid #2a2820",borderRadius:5,color:"#7a6f5e",fontSize:12,fontFamily:"'Lora',serif",cursor:"pointer",fontStyle:"italic"}}>{q}</button>
-                    ))}
-                  </div>
-                  <AskBox onAsk={askHistory} loading={loading} />
-                  {loading && <div style={{color:"#6b6355",fontStyle:"italic",marginTop:20}}>Searching your history…</div>}
-                  {err && <div style={{marginTop:14,padding:"10px 14px",background:"#1e0e0e",borderRadius:6,color:"#c07070",fontSize:13}}>{err}</div>}
-                  {coach && !loading && <div style={{marginTop:24,padding:"20px 22px",background:"#14120e",borderRadius:8,fontSize:15,lineHeight:1.85,color:"#d4c9b0",whiteSpace:"pre-wrap",borderLeft:"2px solid #c8a96e"}}>{coach}</div>}
-                </>}
-          </div>}
 
-        </main>
+            {entries.length < 3 && !memory && (
+              <div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:10,padding:"20px 22px",textAlign:"center",color:"var(--text3)",fontStyle:"italic",fontSize:14}}>
+                Write at least 3 entries before generating your memory profile.
+              </div>
+            )}
 
-        <footer style={{
-          padding:"12px 24px",borderTop:"1px solid #1a1814",
-          display:"flex",justifyContent:"space-between",alignItems:"center",
-          fontSize:10,color:"#2a2820",letterSpacing:"0.1em",fontFamily:"'Cinzel',serif",textTransform:"uppercase",
-          paddingBottom:"max(env(safe-area-inset-bottom,0px),12px)",
-        }}>
-          <span>{entries.length} {entries.length===1?"entry":"entries"}</span>
-          <div style={{display:"flex",gap:16}}>
-            <button onClick={window.openSheets}  style={{background:"none",border:"none",color:"#2a2820",cursor:"pointer",fontSize:10,fontFamily:"'Cinzel',serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>⊞ Sheets</button>
-            <button onClick={window.checkApiKey} style={{background:"none",border:"none",color:"#2a2820",cursor:"pointer",fontSize:10,fontFamily:"'Cinzel',serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>⚙ API Key</button>
+            {memLoading && (
+              <div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:10,padding:"24px 22px",textAlign:"center",color:"var(--light)",fontStyle:"italic",fontSize:14}}>
+                Reading your entries and building your profile…
+              </div>
+            )}
+
+            {memory && !memLoading && (
+              <div style={{background:"var(--cream)",border:"1px solid var(--border)",borderRadius:12,padding:"22px 24px",fontSize:15,lineHeight:1.85,color:"var(--text2)",whiteSpace:"pre-wrap"}}>
+                {memory.text}
+              </div>
+            )}
+
+            {!memory && !memLoading && entries.length >= 3 && (
+              <div style={{background:"var(--bg2)",border:"1px dashed var(--border2)",borderRadius:10,padding:"28px 22px",textAlign:"center"}}>
+                <div style={{fontSize:15,color:"var(--text3)",marginBottom:8,fontStyle:"italic"}}>No memory profile yet.</div>
+                <div style={{fontSize:13,color:"var(--light)",lineHeight:1.6}}>
+                  Generate your profile and Claude will use it to personalize every coaching session going forward.
+                </div>
+              </div>
+            )}
           </div>
-        </footer>
-      </div>
-    );
-  }
 
-  ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+          {memory && (
+            <div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:10,padding:"14px 18px",fontSize:13,color:"var(--text3)",lineHeight:1.7}}>
+              <strong style={{color:"var(--espresso)",fontFamily:"'Cinzel',serif",fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase"}}>How this works</strong><br/>
+              This profile is fed into every coaching session automatically. Refresh it monthly or after significant life changes to keep it accurate. The more you journal, the sharper it gets.
+            </div>
+          )}
+        </div>}
+
+        {/* ── LETTERS ── */}
+        {view==="letters" && (
+          <FutureLetter letters={letters} onSave={updateLetters}/>
+        )}
+
+      </main>
+
+      <footer style={{
+        padding:"10px 20px",borderTop:"1px solid var(--border)",
+        display:"flex",justifyContent:"space-between",alignItems:"center",
+        fontSize:9,color:"var(--light)",letterSpacing:"0.1em",fontFamily:"'Cinzel',serif",textTransform:"uppercase",
+        background:"var(--cream)",paddingBottom:"max(env(safe-area-inset-bottom,0px),10px)",
+      }}>
+        <span>{entries.length} {entries.length===1?"entry":"entries"} · {goals.length} goals · {memory?"memory ✓":"no memory"}</span>
+        <div style={{display:"flex",gap:14}}>
+          <button onClick={window.openSheets}  style={{background:"none",border:"none",color:"var(--light)",cursor:"pointer",fontSize:9,fontFamily:"'Cinzel',serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>⊞ Sheets</button>
+          <button onClick={window.checkApiKey} style={{background:"none",border:"none",color:"var(--light)",cursor:"pointer",fontSize:9,fontFamily:"'Cinzel',serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>⚙ API</button>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>
