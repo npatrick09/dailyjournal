@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Journal" />
+  <title>Personal Journal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Cinzel:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #0f0e0c; }
+    body { -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a2820; border-radius: 2px; }
+    textarea, input { -webkit-appearance: none; appearance: none; }
+    /* API key modal */
+    #api-modal {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      z-index: 1000; align-items: center; justify-content: center; padding: 24px;
+    }
+    #api-modal.show { display: flex; }
+    #api-modal-box {
+      background: #14120e; border: 1px solid #3a3628; border-radius: 12px;
+      padding: 32px 28px; max-width: 480px; width: 100%;
+    }
+    #api-modal-box h2 {
+      font-family: 'Cinzel', serif; font-size: 16px; color: #c8a96e;
+      letter-spacing: 0.15em; margin-bottom: 12px;
+    }
+    #api-modal-box p {
+      font-family: 'Lora', serif; font-size: 13px; color: #7a6f5e;
+      line-height: 1.7; margin-bottom: 20px;
+    }
+    #api-modal-box a { color: #c8a96e; }
+    #api-key-input {
+      width: 100%; padding: 12px 14px; background: #0f0e0c;
+      border: 1px solid #2a2820; border-radius: 6px; color: #e8e0d0;
+      font-family: monospace; font-size: 13px; outline: none; margin-bottom: 16px;
+    }
+    #api-key-input:focus { border-color: #3a3628; }
+    #api-key-save {
+      width: 100%; padding: 12px; background: #c8a96e; color: #0f0e0c;
+      border: none; border-radius: 6px; font-family: 'Cinzel', serif;
+      font-size: 12px; letter-spacing: 0.15em; cursor: pointer;
+      text-transform: uppercase;
+    }
+    #api-key-note {
+      margin-top: 12px; font-family: 'Lora', serif; font-size: 11px;
+      color: #3a3628; text-align: center; font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+<!-- API Key Modal -->
+<div id="api-modal">
+  <div id="api-modal-box">
+    <h2>Connect Your Journal</h2>
+    <p>This app uses the Claude AI API for coaching. You'll need a free Anthropic API key — get one at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Your key is stored only in your browser, never sent anywhere except Anthropic.</p>
+    <input id="api-key-input" type="password" placeholder="sk-ant-..." />
+    <button id="api-key-save">Save & Start Journaling</button>
+    <p id="api-key-note">Stored locally on this device only</p>
+  </div>
+</div>
+
+<div id="root"></div>
+
+<script>
+  // API key management
+  const API_KEY_STORAGE = 'journal_api_key';
+  function getApiKey() { return localStorage.getItem(API_KEY_STORAGE) || ''; }
+  function setApiKey(k) { localStorage.setItem(API_KEY_STORAGE, k); }
+
+  document.getElementById('api-key-save').onclick = function() {
+    const val = document.getElementById('api-key-input').value.trim();
+    if (!val.startsWith('sk-')) {
+      document.getElementById('api-key-input').style.borderColor = '#a05050';
+      return;
+    }
+    setApiKey(val);
+    document.getElementById('api-modal').classList.remove('show');
+  };
+
+  window.checkApiKey = function() {
+    if (!getApiKey()) document.getElementById('api-modal').classList.add('show');
+  };
+  window.getApiKey = getApiKey;
+</script>
+
+<script type="text/babel">
+  const { useState, useEffect, useRef } = React;
+
+  const PROMPTS = [
+    "What's one thing you want to move forward on today?",
+    "What's been weighing on you lately — and what would it feel like to let it go?",
+    "Where do you feel most alive right now? Where do you feel stuck?",
+    "What would your best self do today that your current self is avoiding?",
+    "What's a goal you keep circling back to? What's actually stopping you?",
+    "What does success look like for you this week — in your own words?",
+    "What are you grateful for, and what do you want more of?",
+    "If you could change one habit starting today, what would it be and why?",
+  ];
+
+  const STORAGE_KEY = "journal_entries_v1";
+
+  function getToday() {
+    return new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+  }
+  function getTodayKey() {
+    return new Date().toISOString().split("T")[0];
+  }
+  function loadEntries() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+    catch { return []; }
+  }
+  function saveEntries(entries) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  }
+
+  async function callClaude(systemPrompt, userMessage) {
+    const key = window.getApiKey();
+    if (!key) { window.checkApiKey(); throw new Error("No API key"); }
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": key,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userMessage }],
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      if (res.status === 401) { window.checkApiKey(); throw new Error("Invalid API key"); }
+      throw new Error(err.error?.message || "API error");
+    }
+    const data = await res.json();
+    return data.content?.find(b => b.type === "text")?.text || "No response.";
+  }
+
+  function AskBox({ onAsk, loading }) {
+    const [q, setQ] = useState("");
+    const submit = () => { if (q.trim()) { onAsk(q); setQ(""); } };
+    return (
+      <div style={{ display: "flex", gap: 10 }}>
+        <input
+          value={q}
+          onChange={e => setQ(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && submit()}
+          placeholder="Ask about your entries…"
+          style={{
+            flex: 1, padding: "11px 16px", background: "#14120e",
+            border: "1px solid #2a2820", borderRadius: 6, color: "#e8e0d0",
+            fontSize: 15, fontFamily: "'Lora', serif", outline: "none",
+          }}
+        />
+        <button
+          onClick={submit}
+          disabled={!q.trim() || loading}
+          style={{
+            padding: "11px 18px",
+            background: q.trim() ? "#c8a96e" : "#2a2820",
+            color: q.trim() ? "#0f0e0c" : "#3a3628",
+            border: "none", borderRadius: 6, cursor: q.trim() ? "pointer" : "default", fontSize: 13,
+          }}
+        >Ask</button>
+      </div>
+    );
+  }
+
+  function Journal() {
+    const [view, setView] = useState("write");
+    const [entry, setEntry] = useState("");
+    const [entries, setEntries] = useState([]);
+    const [coachResponse, setCoachResponse] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [showPrompt, setShowPrompt] = useState(false);
+    const [dailyPrompt] = useState(PROMPTS[new Date().getDay() % PROMPTS.length]);
+    const [selectedEntry, setSelectedEntry] = useState(null);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [saved, setSaved] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
+
+    useEffect(() => {
+      setEntries(loadEntries());
+      window.checkApiKey();
+    }, []);
+
+    const todayEntry = entries.find(e => e.date === getTodayKey());
+    const filteredEntries = entries
+      .filter(e =>
+        e.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (e.coachNote || "").toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    async function handleCoach(text, allEntries) {
+      setLoading(true);
+      setCoachResponse("");
+      setErrorMsg("");
+      setView("coach");
+      const recentHistory = allEntries.slice(-5).map(e =>
+        `[${e.date}]: ${e.text.slice(0, 300)}${e.text.length > 300 ? "…" : ""}`
+      ).join("\n\n");
+      const system = `You are a warm, insightful personal coach. You read journal entries and offer:
+1. A brief reflection or key insight (2-3 sentences)
+2. One focused coaching question to go deeper
+3. A specific micro-action or intention for today
+
+Keep responses concise — the person has 15 minutes total. Be direct, personal, and encouraging. Avoid corporate coaching clichés. Sound like a brilliant friend who really listens.
+${recentHistory ? `\nRecent journal context:\n${recentHistory}` : ""}`;
+      try {
+        const response = await callClaude(system, `Today's entry:\n\n${text}`);
+        setCoachResponse(response);
+        return response;
+      } catch (e) {
+        setErrorMsg(e.message);
+        setCoachResponse("");
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function handleAskHistory(question) {
+      setLoading(true);
+      setCoachResponse("");
+      setErrorMsg("");
+      const allText = entries.map(e =>
+        `[${e.date}]: ${e.text}${e.coachNote ? `\nCoach note: ${e.coachNote}` : ""}`
+      ).join("\n\n---\n\n");
+      const system = `You are a personal journal analyst and coach. You have access to all of this person's journal entries. Answer questions about patterns, progress, recurring themes, goals, and emotional trends. Be insightful and specific — reference actual entries when relevant.\n\nAll entries:\n\n${allText}`;
+      try {
+        const response = await callClaude(system, question);
+        setCoachResponse(response);
+      } catch (e) {
+        setErrorMsg(e.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function handleSaveAndCoach() {
+      if (!entry.trim()) return;
+      const coachNote = await handleCoach(entry, entries);
+      const newEntry = {
+        id: Date.now(), date: getTodayKey(), displayDate: getToday(),
+        text: entry, coachNote: coachNote || "",
+      };
+      const updated = [...entries.filter(e => e.date !== getTodayKey()), newEntry];
+      setEntries(updated);
+      saveEntries(updated);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    }
+
+    const wordCount = entry.trim().split(/\s+/).filter(Boolean).length;
+
+    const navBtn = (v, label) => (
+      <button
+        key={v}
+        onClick={() => { setView(v); setCoachResponse(""); setErrorMsg(""); }}
+        style={{
+          padding: "8px 16px", borderRadius: 6, border: "1px solid",
+          borderColor: view === v || (view === "coach" && v === "write") ? "#c8a96e" : "#2a2820",
+          background: view === v || (view === "coach" && v === "write") ? "#1e1b15" : "transparent",
+          color: view === v || (view === "coach" && v === "write") ? "#c8a96e" : "#6b6355",
+          fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase",
+          cursor: "pointer", fontFamily: "'Cinzel', serif",
+        }}
+      >{label}</button>
+    );
+
+    return (
+      <div style={{
+        minHeight: "100vh", background: "#0f0e0c",
+        fontFamily: "'Lora', Georgia, serif", color: "#e8e0d0",
+        display: "flex", flexDirection: "column",
+      }}>
+        {/* Header */}
+        <header style={{
+          padding: "env(safe-area-inset-top, 20px) 28px 16px",
+          paddingTop: "max(env(safe-area-inset-top, 0px), 20px)",
+          borderBottom: "1px solid #1e1c18",
+          display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+          position: "sticky", top: 0, background: "#0f0e0c", zIndex: 10,
+        }}>
+          <div>
+            <div style={{ fontFamily: "'Cinzel', serif", fontSize: 10, letterSpacing: "0.25em", color: "#4a4235", textTransform: "uppercase", marginBottom: 4 }}>
+              Personal Journal
+            </div>
+            <div style={{ fontSize: 13, color: "#7a6f5e", fontStyle: "italic" }}>{getToday()}</div>
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {navBtn("write", "Write")}
+            {navBtn("history", "Past")}
+            {navBtn("ask", "Ask")}
+          </div>
+        </header>
+
+        <main style={{ flex: 1, padding: "24px 24px 40px", maxWidth: 700, width: "100%", margin: "0 auto" }}>
+
+          {/* ── WRITE / COACH VIEW ── */}
+          {(view === "write" || view === "coach") && (
+            <div>
+              {view === "write" && (
+                <>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+                    <button
+                      onClick={() => setShowPrompt(!showPrompt)}
+                      style={{
+                        background: "transparent", border: "1px solid #2a2820",
+                        color: "#6b6355", padding: "5px 13px", borderRadius: 5,
+                        fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
+                        cursor: "pointer", fontFamily: "'Cinzel', serif",
+                      }}
+                    >{showPrompt ? "Hide prompt" : "✦ Show prompt"}</button>
+                    {saved && <span style={{ color: "#7a9e7a", fontSize: 12, fontStyle: "italic" }}>Saved ✓</span>}
+                  </div>
+
+                  {showPrompt && (
+                    <div style={{
+                      padding: "14px 18px", borderLeft: "2px solid #c8a96e", marginBottom: 20,
+                      background: "#14120e", borderRadius: "0 6px 6px 0",
+                      color: "#c8a96e", fontSize: 15, fontStyle: "italic", lineHeight: 1.65,
+                    }}>
+                      {dailyPrompt}
+                    </div>
+                  )}
+
+                  {todayEntry && (
+                    <div style={{
+                      padding: "10px 14px", background: "#14120e", borderRadius: 6,
+                      marginBottom: 16, fontSize: 12, color: "#6b6355",
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                    }}>
+                      <span>You wrote today already.</span>
+                      <button
+                        onClick={() => { setEntry(todayEntry.text); setView("coach"); setCoachResponse(todayEntry.coachNote || ""); }}
+                        style={{ background: "transparent", border: "none", color: "#c8a96e", cursor: "pointer", fontSize: 12 }}
+                      >View coaching →</button>
+                    </div>
+                  )}
+
+                  <textarea
+                    value={entry}
+                    onChange={e => setEntry(e.target.value)}
+                    placeholder="Start writing… no rules, no judgment. Just you and the page."
+                    style={{
+                      width: "100%", minHeight: 300, background: "#14120e",
+                      border: "1px solid #2a2820", borderRadius: 8,
+                      padding: "20px 22px", color: "#e8e0d0", fontSize: 18,
+                      lineHeight: 1.8, fontFamily: "'Lora', Georgia, serif",
+                      resize: "vertical", outline: "none", caretColor: "#c8a96e",
+                      transition: "border-color 0.2s",
+                    }}
+                    onFocus={e => e.target.style.borderColor = "#3a3628"}
+                    onBlur={e => e.target.style.borderColor = "#2a2820"}
+                  />
+
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14 }}>
+                    <span style={{ fontSize: 12, color: "#3a3628" }}>
+                      {wordCount > 0 ? `${wordCount} word${wordCount !== 1 ? "s" : ""}` : ""}
+                    </span>
+                    <button
+                      onClick={handleSaveAndCoach}
+                      disabled={!entry.trim() || loading}
+                      style={{
+                        padding: "12px 30px",
+                        background: entry.trim() ? "#c8a96e" : "#1e1c18",
+                        color: entry.trim() ? "#0f0e0c" : "#3a3628",
+                        border: "none", borderRadius: 6,
+                        fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase",
+                        cursor: entry.trim() ? "pointer" : "default",
+                        fontFamily: "'Cinzel', serif", transition: "all 0.2s",
+                      }}
+                    >{loading ? "Thinking…" : "Save & Coach →"}</button>
+                  </div>
+
+                  {errorMsg && (
+                    <div style={{ marginTop: 14, padding: "10px 14px", background: "#1e0e0e", borderRadius: 6, color: "#c07070", fontSize: 13 }}>
+                      {errorMsg === "Invalid API key"
+                        ? <>Invalid API key. <button onClick={window.checkApiKey} style={{ background: "none", border: "none", color: "#c8a96e", cursor: "pointer", fontSize: 13 }}>Update key →</button></>
+                        : errorMsg}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Coach panel */}
+              {view === "coach" && (
+                <div>
+                  <button
+                    onClick={() => setView("write")}
+                    style={{ background: "transparent", border: "none", color: "#6b6355", cursor: "pointer", fontSize: 13, marginBottom: 20, padding: 0 }}
+                  >← Back to writing</button>
+
+                  {entry && (
+                    <div style={{
+                      padding: "16px 20px", background: "#14120e", borderRadius: 8, marginBottom: 24,
+                      fontSize: 15, lineHeight: 1.75, color: "#7a6f5e", fontStyle: "italic",
+                      maxHeight: 150, overflowY: "auto", borderLeft: "2px solid #2a2820",
+                    }}>
+                      {entry}
+                    </div>
+                  )}
+
+                  <div style={{ fontFamily: "'Cinzel', serif", fontSize: 10, letterSpacing: "0.22em", color: "#6b6355", textTransform: "uppercase", marginBottom: 16 }}>
+                    ✦ Coaching
+                  </div>
+
+                  {loading
+                    ? <div style={{ color: "#6b6355", fontStyle: "italic", fontSize: 15 }}>Reading your entry…</div>
+                    : <div style={{ fontSize: 16, lineHeight: 1.85, color: "#d4c9b0", whiteSpace: "pre-wrap" }}>{coachResponse}</div>
+                  }
+
+                  {errorMsg && (
+                    <div style={{ marginTop: 14, padding: "10px 14px", background: "#1e0e0e", borderRadius: 6, color: "#c07070", fontSize: 13 }}>
+                      {errorMsg}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── HISTORY VIEW ── */}
+          {view === "history" && (
+            <div>
+              <input
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search entries…"
+                style={{
+                  width: "100%", padding: "11px 16px", background: "#14120e",
+                  border: "1px solid #2a2820", borderRadius: 6, color: "#e8e0d0",
+                  fontSize: 14, fontFamily: "'Lora', serif", outline: "none", marginBottom: 20,
+                }}
+              />
+
+              {filteredEntries.length === 0 && (
+                <div style={{ color: "#3a3628", fontStyle: "italic", textAlign: "center", marginTop: 60 }}>
+                  No entries yet. Start writing.
+                </div>
+              )}
+
+              {filteredEntries.map(e => (
+                <div
+                  key={e.id}
+                  onClick={() => setSelectedEntry(selectedEntry?.id === e.id ? null : e)}
+                  style={{
+                    padding: "16px 18px", background: selectedEntry?.id === e.id ? "#14120e" : "transparent",
+                    border: "1px solid", borderColor: selectedEntry?.id === e.id ? "#3a3628" : "#1e1c18",
+                    borderRadius: 8, marginBottom: 10, cursor: "pointer", transition: "all 0.15s",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                    <span style={{ fontFamily: "'Cinzel', serif", fontSize: 10, color: "#c8a96e", letterSpacing: "0.12em", textTransform: "uppercase" }}>{e.displayDate}</span>
+                    <span style={{ fontSize: 11, color: "#3a3628" }}>{e.text.trim().split(/\s+/).length} words</span>
+                  </div>
+                  <div style={{
+                    fontSize: 14, color: "#7a6f5e", lineHeight: 1.55,
+                    overflow: "hidden", maxHeight: selectedEntry?.id === e.id ? "none" : 44,
+                  }}>
+                    {e.text}
+                  </div>
+                  {selectedEntry?.id === e.id && e.coachNote && (
+                    <div style={{
+                      marginTop: 16, paddingTop: 16, borderTop: "1px solid #2a2820",
+                      fontSize: 14, color: "#a09070", lineHeight: 1.75, fontStyle: "italic", whiteSpace: "pre-wrap",
+                    }}>
+                      <span style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: "0.2em", color: "#6b6355", textTransform: "uppercase", fontStyle: "normal", display: "block", marginBottom: 8 }}>✦ Coaching note</span>
+                      {e.coachNote}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {entries.length > 0 && (
+                <div style={{ marginTop: 24, textAlign: "center" }}>
+                  <button
+                    onClick={() => {
+                      if (window.confirm("Export all entries as text?")) {
+                        const txt = entries.sort((a,b) => a.date.localeCompare(b.date)).map(e =>
+                          `${e.displayDate}\n${"─".repeat(40)}\n${e.text}${e.coachNote ? `\n\n[Coaching]\n${e.coachNote}` : ""}`
+                        ).join("\n\n\n");
+                        const blob = new Blob([txt], { type: "text/plain" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url; a.download = "my-journal.txt"; a.click();
+                      }
+                    }}
+                    style={{
+                      background: "transparent", border: "1px solid #2a2820", color: "#6b6355",
+                      padding: "8px 18px", borderRadius: 5, fontSize: 11, cursor: "pointer",
+                      fontFamily: "'Cinzel', serif", letterSpacing: "0.15em", textTransform: "uppercase",
+                    }}
+                  >↓ Export all entries</button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── ASK VIEW ── */}
+          {view === "ask" && (
+            <div>
+              <div style={{ fontSize: 13, color: "#6b6355", marginBottom: 20, lineHeight: 1.7 }}>
+                Ask anything about your journal history — patterns, progress, recurring themes, what your past self was working on.
+              </div>
+
+              {entries.length === 0
+                ? <div style={{ color: "#3a3628", fontStyle: "italic" }}>No entries yet to analyse.</div>
+                : <>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
+                      {[
+                        "What goals keep coming up?",
+                        "How has my mood shifted over time?",
+                        "What am I avoiding?",
+                        "What progress have I made?",
+                      ].map(q => (
+                        <button
+                          key={q}
+                          onClick={() => handleAskHistory(q)}
+                          style={{
+                            padding: "7px 13px", background: "transparent", border: "1px solid #2a2820",
+                            borderRadius: 5, color: "#7a6f5e", fontSize: 12,
+                            fontFamily: "'Lora', serif", cursor: "pointer", fontStyle: "italic",
+                          }}
+                        >{q}</button>
+                      ))}
+                    </div>
+
+                    <AskBox onAsk={handleAskHistory} loading={loading} />
+
+                    {loading && <div style={{ color: "#6b6355", fontStyle: "italic", marginTop: 20 }}>Searching your history…</div>}
+
+                    {errorMsg && (
+                      <div style={{ marginTop: 14, padding: "10px 14px", background: "#1e0e0e", borderRadius: 6, color: "#c07070", fontSize: 13 }}>
+                        {errorMsg}
+                      </div>
+                    )}
+
+                    {coachResponse && !loading && (
+                      <div style={{
+                        marginTop: 24, padding: "20px 22px", background: "#14120e", borderRadius: 8,
+                        fontSize: 15, lineHeight: 1.85, color: "#d4c9b0", whiteSpace: "pre-wrap",
+                        borderLeft: "2px solid #c8a96e",
+                      }}>
+                        {coachResponse}
+                      </div>
+                    )}
+                  </>
+              }
+            </div>
+          )}
+        </main>
+
+        <footer style={{
+          padding: "14px 28px", borderTop: "1px solid #1a1814",
+          display: "flex", justifyContent: "space-between",
+          fontSize: 10, color: "#2a2820", letterSpacing: "0.1em",
+          fontFamily: "'Cinzel', serif", textTransform: "uppercase",
+          paddingBottom: "max(env(safe-area-inset-bottom, 0px), 14px)",
+        }}>
+          <span>{entries.length} {entries.length === 1 ? "entry" : "entries"}</span>
+          <button
+            onClick={window.checkApiKey}
+            style={{ background: "none", border: "none", color: "#2a2820", cursor: "pointer", fontSize: 10, fontFamily: "'Cinzel', serif", letterSpacing: "0.1em", textTransform: "uppercase" }}
+          >⚙ API Key</button>
+        </footer>
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(<Journal />);
+</script>
+</body>
+</html>
