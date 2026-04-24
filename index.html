@@ -19,82 +19,231 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #2a2820; border-radius: 2px; }
     textarea, input { -webkit-appearance: none; appearance: none; }
-    /* API key modal */
-    #api-modal {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88);
       z-index: 1000; align-items: center; justify-content: center; padding: 24px;
     }
-    #api-modal.show { display: flex; }
-    #api-modal-box {
+    .modal-overlay.show { display: flex; }
+    .modal-box {
       background: #14120e; border: 1px solid #3a3628; border-radius: 12px;
-      padding: 32px 28px; max-width: 480px; width: 100%;
+      padding: 32px 28px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto;
     }
-    #api-modal-box h2 {
-      font-family: 'Cinzel', serif; font-size: 16px; color: #c8a96e;
-      letter-spacing: 0.15em; margin-bottom: 12px;
+    .modal-box h2 {
+      font-family: 'Cinzel', serif; font-size: 15px; color: #c8a96e;
+      letter-spacing: 0.15em; margin-bottom: 10px; text-transform: uppercase;
     }
-    #api-modal-box p {
-      font-family: 'Lora', serif; font-size: 13px; color: #7a6f5e;
-      line-height: 1.7; margin-bottom: 20px;
-    }
-    #api-modal-box a { color: #c8a96e; }
-    #api-key-input {
+    .modal-box p { font-family: 'Lora', serif; font-size: 13px; color: #7a6f5e; line-height: 1.75; margin-bottom: 16px; }
+    .modal-box a { color: #c8a96e; }
+    .modal-input {
       width: 100%; padding: 12px 14px; background: #0f0e0c;
       border: 1px solid #2a2820; border-radius: 6px; color: #e8e0d0;
-      font-family: monospace; font-size: 13px; outline: none; margin-bottom: 16px;
+      font-family: monospace; font-size: 13px; outline: none; margin-bottom: 12px;
     }
-    #api-key-input:focus { border-color: #3a3628; }
-    #api-key-save {
+    .modal-btn {
       width: 100%; padding: 12px; background: #c8a96e; color: #0f0e0c;
       border: none; border-radius: 6px; font-family: 'Cinzel', serif;
-      font-size: 12px; letter-spacing: 0.15em; cursor: pointer;
-      text-transform: uppercase;
+      font-size: 11px; letter-spacing: 0.15em; cursor: pointer;
+      text-transform: uppercase; margin-bottom: 8px;
     }
-    #api-key-note {
-      margin-top: 12px; font-family: 'Lora', serif; font-size: 11px;
-      color: #3a3628; text-align: center; font-style: italic;
+    .modal-skip {
+      width: 100%; padding: 8px; background: transparent; color: #4a4235;
+      border: 1px solid #2a2820; border-radius: 6px; font-family: 'Lora', serif;
+      font-size: 12px; cursor: pointer; font-style: italic;
     }
+    .modal-note { margin-top: 10px; font-family: 'Lora', serif; font-size: 11px; color: #3a3628; text-align: center; font-style: italic; }
+    .step-label {
+      font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.2em;
+      color: #4a4235; text-transform: uppercase; margin-bottom: 14px;
+      padding-bottom: 10px; border-bottom: 1px solid #1e1c18;
+    }
+    .code-block {
+      background: #0a0908; border: 1px solid #2a2820; border-radius: 6px;
+      padding: 14px; font-family: monospace; font-size: 11px; color: #a09070;
+      white-space: pre-wrap; word-break: break-all; margin-bottom: 12px;
+      line-height: 1.6; max-height: 160px; overflow-y: auto;
+    }
+    .copy-btn {
+      width: 100%; padding: 8px; background: transparent; border: 1px solid #3a3628;
+      color: #c8a96e; border-radius: 5px; font-family: 'Cinzel', serif;
+      font-size: 10px; letter-spacing: 0.15em; cursor: pointer; text-transform: uppercase; margin-bottom: 16px;
+    }
+    .sync-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.12em;
+      text-transform: uppercase; padding: 4px 9px; border-radius: 10px; cursor: pointer; border: none;
+    }
+    .sync-pill.on  { color: #7a9e7a; background: #0e1a0e; border: 1px solid #1e3a1e; }
+    .sync-pill.off { color: #4a4235; background: transparent; border: 1px solid #2a2820; }
+    .sync-pill.err { color: #c07070; background: #1e0e0e; border: 1px solid #3a1e1e; }
   </style>
 </head>
 <body>
 
 <!-- API Key Modal -->
-<div id="api-modal">
-  <div id="api-modal-box">
+<div id="api-modal" class="modal-overlay">
+  <div class="modal-box">
     <h2>Connect Your Journal</h2>
-    <p>This app uses the Claude AI API for coaching. You'll need a free Anthropic API key — get one at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Your key is stored only in your browser, never sent anywhere except Anthropic.</p>
-    <input id="api-key-input" type="password" placeholder="sk-ant-..." />
-    <button id="api-key-save">Save & Start Journaling</button>
-    <p id="api-key-note">Stored locally on this device only</p>
+    <p>You need an Anthropic API key to power coaching. Get one at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Stored only in this browser, never sent anywhere else.</p>
+    <input id="api-key-input" class="modal-input" type="password" placeholder="sk-ant-..." />
+    <button id="api-key-save" class="modal-btn">Save & Start Journaling</button>
+    <p class="modal-note">Stays on this device only</p>
+  </div>
+</div>
+
+<!-- Google Sheets Setup Modal -->
+<div id="sheets-modal" class="modal-overlay">
+  <div class="modal-box" style="max-width:560px;">
+
+    <div id="s-step-1">
+      <div class="step-label">Step 1 of 3 — Create your Google Sheet</div>
+      <h2>Auto-Backup to Google Sheets</h2>
+      <p>Every entry will automatically save to a Google Sheet in your Drive — accessible from iPhone, iPad, or any browser. Zero chance of losing your journal.</p>
+      <p>
+        <strong style="color:#e8e0d0">1.</strong> Go to <a href="https://sheets.new" target="_blank">sheets.new</a> to create a blank spreadsheet.<br/><br/>
+        <strong style="color:#e8e0d0">2.</strong> Name it something like <em>"My Journal"</em>.<br/><br/>
+        <strong style="color:#e8e0d0">3.</strong> Click <strong style="color:#e8e0d0">Extensions → Apps Script</strong> in the top menu.
+      </p>
+      <button class="modal-btn" onclick="goStep(2)">Done — I'm in Apps Script →</button>
+      <button class="modal-skip" onclick="closeSheets()">Skip for now</button>
+    </div>
+
+    <div id="s-step-2" style="display:none">
+      <div class="step-label">Step 2 of 3 — Add the bridge script</div>
+      <h2>Paste This Script</h2>
+      <p>
+        <strong style="color:#e8e0d0">1.</strong> Delete everything in the Apps Script editor.<br/><br/>
+        <strong style="color:#e8e0d0">2.</strong> Paste the code below.<br/><br/>
+        <strong style="color:#e8e0d0">3.</strong> Click <strong style="color:#e8e0d0">Save 💾</strong>, then <strong style="color:#e8e0d0">Deploy → New deployment</strong>.<br/><br/>
+        <strong style="color:#e8e0d0">4.</strong> Set <em>Execute as</em>: <strong style="color:#e8e0d0">Me</strong> · <em>Who has access</em>: <strong style="color:#e8e0d0">Anyone</strong>.<br/><br/>
+        <strong style="color:#e8e0d0">5.</strong> Click Deploy and <strong style="color:#e8e0d0">copy the Web App URL</strong>.
+      </p>
+      <div class="code-block" id="script-display"></div>
+      <button class="copy-btn" id="copy-script-btn">⧉ Copy script to clipboard</button>
+      <button class="modal-btn" onclick="goStep(3)">Done — I have my Web App URL →</button>
+      <button class="modal-skip" onclick="goStep(1)">← Back</button>
+    </div>
+
+    <div id="s-step-3" style="display:none">
+      <div class="step-label">Step 3 of 3 — Connect</div>
+      <h2>Paste Your Web App URL</h2>
+      <p>Paste the deployment URL from Google Apps Script. It starts with <em>https://script.google.com/macros/s/…</em></p>
+      <input id="sheets-url-input" class="modal-input" type="url" placeholder="https://script.google.com/macros/s/..." />
+      <button class="modal-btn" id="sheets-save-btn">Connect Google Sheets →</button>
+      <button class="modal-skip" onclick="goStep(2)">← Back</button>
+      <p class="modal-note">Entries will auto-backup after every save</p>
+    </div>
+
   </div>
 </div>
 
 <div id="root"></div>
 
 <script>
-  // API key management
-  const API_KEY_STORAGE = 'journal_api_key';
-  function getApiKey() { return localStorage.getItem(API_KEY_STORAGE) || ''; }
-  function setApiKey(k) { localStorage.setItem(API_KEY_STORAGE, k); }
+  const APIK  = 'jrnl_api_key';
+  const SHEETK = 'jrnl_sheets_url';
 
-  document.getElementById('api-key-save').onclick = function() {
-    const val = document.getElementById('api-key-input').value.trim();
-    if (!val.startsWith('sk-')) {
-      document.getElementById('api-key-input').style.borderColor = '#a05050';
-      return;
-    }
-    setApiKey(val);
+  window.getApiKey    = () => localStorage.getItem(APIK)   || '';
+  window.getSheetsUrl = () => localStorage.getItem(SHEETK) || '';
+
+  window.checkApiKey = () => {
+    if (!window.getApiKey()) document.getElementById('api-modal').classList.add('show');
+  };
+
+  document.getElementById('api-key-save').onclick = () => {
+    const v = document.getElementById('api-key-input').value.trim();
+    if (!v.startsWith('sk-')) { document.getElementById('api-key-input').style.borderColor='#a05050'; return; }
+    localStorage.setItem(APIK, v);
     document.getElementById('api-modal').classList.remove('show');
   };
 
-  window.checkApiKey = function() {
-    if (!getApiKey()) document.getElementById('api-modal').classList.add('show');
+  const APPS_SCRIPT = `function doPost(e) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var data = JSON.parse(e.postData.contents);
+
+  if (data.action === 'save') {
+    var sheet = ss.getSheetByName('Entries') || ss.insertSheet('Entries');
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(['ID','Date','Display Date','Entry','Coaching Note','Saved At']);
+      sheet.getRange(1,1,1,6).setFontWeight('bold');
+    }
+    var rows = sheet.getDataRange().getValues();
+    for (var i = 1; i < rows.length; i++) {
+      if (rows[i][1] === data.entry.date) {
+        sheet.getRange(i+1,1,1,6).setValues([[
+          data.entry.id, data.entry.date, data.entry.displayDate,
+          data.entry.text, data.entry.coachNote, new Date().toISOString()
+        ]]);
+        return ContentService
+          .createTextOutput(JSON.stringify({ok:true}))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    sheet.appendRow([
+      data.entry.id, data.entry.date, data.entry.displayDate,
+      data.entry.text, data.entry.coachNote, new Date().toISOString()
+    ]);
+    return ContentService
+      .createTextOutput(JSON.stringify({ok:true}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  if (data.action === 'load') {
+    var sheet = ss.getSheetByName('Entries');
+    if (!sheet || sheet.getLastRow() <= 1) {
+      return ContentService
+        .createTextOutput(JSON.stringify({entries:[]}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    var rows = sheet.getDataRange().getValues();
+    var entries = [];
+    for (var i = 1; i < rows.length; i++) {
+      if (rows[i][1]) entries.push({
+        id: rows[i][0], date: rows[i][1], displayDate: rows[i][2],
+        text: rows[i][3], coachNote: rows[i][4]
+      });
+    }
+    return ContentService
+      .createTextOutput(JSON.stringify({entries:entries}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+function doGet(e) { return doPost(e); }`;
+
+  document.getElementById('script-display').textContent = APPS_SCRIPT;
+
+  document.getElementById('copy-script-btn').onclick = () => {
+    navigator.clipboard.writeText(APPS_SCRIPT).then(() => {
+      const b = document.getElementById('copy-script-btn');
+      b.textContent = '✓ Copied!';
+      setTimeout(() => b.textContent = '⧉ Copy script to clipboard', 2000);
+    });
   };
-  window.getApiKey = getApiKey;
+
+  window.goStep = n => {
+    [1,2,3].forEach(i => document.getElementById('s-step-'+i).style.display = i===n?'block':'none');
+  };
+  window.closeSheets = () => document.getElementById('sheets-modal').classList.remove('show');
+  window.openSheets  = () => {
+    document.getElementById('sheets-modal').classList.add('show');
+    const existing = window.getSheetsUrl();
+    goStep(existing ? 3 : 1);
+    if (existing) document.getElementById('sheets-url-input').value = existing;
+  };
+
+  document.getElementById('sheets-save-btn').onclick = () => {
+    const v = document.getElementById('sheets-url-input').value.trim();
+    if (!v.startsWith('https://script.google.com')) {
+      document.getElementById('sheets-url-input').style.borderColor='#a05050'; return;
+    }
+    localStorage.setItem(SHEETK, v);
+    closeSheets();
+    window.__sheetsConnected && window.__sheetsConnected();
+  };
 </script>
 
 <script type="text/babel">
-  const { useState, useEffect, useRef } = React;
+  const { useState, useEffect } = React;
 
   const PROMPTS = [
     "What's one thing you want to move forward on today?",
@@ -107,484 +256,323 @@
     "If you could change one habit starting today, what would it be and why?",
   ];
 
-  const STORAGE_KEY = "journal_entries_v1";
+  const LOCAL_KEY = "jrnl_entries_v2";
+  const getToday    = () => new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  const getTodayKey = () => new Date().toISOString().split("T")[0];
+  const loadLocal   = () => { try { return JSON.parse(localStorage.getItem(LOCAL_KEY)||"[]"); } catch { return []; } };
+  const saveLocal   = e  => localStorage.setItem(LOCAL_KEY, JSON.stringify(e));
 
-  function getToday() {
-    return new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-  }
-  function getTodayKey() {
-    return new Date().toISOString().split("T")[0];
-  }
-  function loadEntries() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
-    catch { return []; }
-  }
-  function saveEntries(entries) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  async function sheetsReq(payload) {
+    const url = window.getSheetsUrl();
+    if (!url) return null;
+    try {
+      const r = await fetch(url, { method:"POST", body: JSON.stringify(payload) });
+      return await r.json();
+    } catch { return null; }
   }
 
-  async function callClaude(systemPrompt, userMessage) {
+  async function callClaude(system, user) {
     const key = window.getApiKey();
     if (!key) { window.checkApiKey(); throw new Error("No API key"); }
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
         "x-api-key": key,
-        "anthropic-version": "2023-06-01",
-        "anthropic-dangerous-direct-browser-access": "true",
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true",
       },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: [{ role: "user", content: userMessage }],
-      }),
+      body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:1000, system, messages:[{role:"user",content:user}] }),
     });
-    if (!res.ok) {
-      const err = await res.json();
-      if (res.status === 401) { window.checkApiKey(); throw new Error("Invalid API key"); }
-      throw new Error(err.error?.message || "API error");
+    if (!r.ok) {
+      const e = await r.json();
+      if (r.status===401) { window.checkApiKey(); throw new Error("Invalid API key"); }
+      throw new Error(e.error?.message||"API error");
     }
-    const data = await res.json();
-    return data.content?.find(b => b.type === "text")?.text || "No response.";
+    const d = await r.json();
+    return d.content?.find(b=>b.type==="text")?.text || "No response.";
   }
 
-  function AskBox({ onAsk, loading }) {
-    const [q, setQ] = useState("");
-    const submit = () => { if (q.trim()) { onAsk(q); setQ(""); } };
+  function AskBox({onAsk, loading}) {
+    const [q,setQ] = useState("");
+    const go = () => { if(q.trim()){onAsk(q);setQ("");} };
     return (
-      <div style={{ display: "flex", gap: 10 }}>
-        <input
-          value={q}
-          onChange={e => setQ(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && submit()}
+      <div style={{display:"flex",gap:10}}>
+        <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}
           placeholder="Ask about your entries…"
-          style={{
-            flex: 1, padding: "11px 16px", background: "#14120e",
-            border: "1px solid #2a2820", borderRadius: 6, color: "#e8e0d0",
-            fontSize: 15, fontFamily: "'Lora', serif", outline: "none",
-          }}
-        />
-        <button
-          onClick={submit}
-          disabled={!q.trim() || loading}
-          style={{
-            padding: "11px 18px",
-            background: q.trim() ? "#c8a96e" : "#2a2820",
-            color: q.trim() ? "#0f0e0c" : "#3a3628",
-            border: "none", borderRadius: 6, cursor: q.trim() ? "pointer" : "default", fontSize: 13,
-          }}
-        >Ask</button>
+          style={{flex:1,padding:"11px 16px",background:"#14120e",border:"1px solid #2a2820",borderRadius:6,color:"#e8e0d0",fontSize:15,fontFamily:"'Lora',serif",outline:"none"}} />
+        <button onClick={go} disabled={!q.trim()||loading}
+          style={{padding:"11px 18px",background:q.trim()?"#c8a96e":"#2a2820",color:q.trim()?"#0f0e0c":"#3a3628",border:"none",borderRadius:6,cursor:q.trim()?"pointer":"default",fontSize:13}}>Ask</button>
       </div>
     );
   }
 
-  function Journal() {
-    const [view, setView] = useState("write");
-    const [entry, setEntry] = useState("");
-    const [entries, setEntries] = useState([]);
-    const [coachResponse, setCoachResponse] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [showPrompt, setShowPrompt] = useState(false);
-    const [dailyPrompt] = useState(PROMPTS[new Date().getDay() % PROMPTS.length]);
-    const [selectedEntry, setSelectedEntry] = useState(null);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [saved, setSaved] = useState(false);
-    const [errorMsg, setErrorMsg] = useState("");
+  function App() {
+    const [view,setView]           = useState("write");
+    const [entry,setEntry]         = useState("");
+    const [entries,setEntries]     = useState([]);
+    const [coach,setCoach]         = useState("");
+    const [loading,setLoading]     = useState(false);
+    const [syncSt,setSyncSt]       = useState("idle"); // idle|syncing|ok|error
+    const [sheetOn,setSheetOn]     = useState(!!window.getSheetsUrl());
+    const [showPrmt,setShowPrmt]   = useState(false);
+    const [prompt]                 = useState(PROMPTS[new Date().getDay()%PROMPTS.length]);
+    const [selEntry,setSelEntry]   = useState(null);
+    const [search,setSearch]       = useState("");
+    const [saved,setSaved]         = useState(false);
+    const [err,setErr]             = useState("");
 
-    useEffect(() => {
-      setEntries(loadEntries());
-      window.checkApiKey();
-    }, []);
+    window.__sheetsConnected = () => { setSheetOn(true); loadAll(); };
 
-    const todayEntry = entries.find(e => e.date === getTodayKey());
-    const filteredEntries = entries
-      .filter(e =>
-        e.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (e.coachNote || "").toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .sort((a, b) => b.date.localeCompare(a.date));
+    async function loadAll() {
+      const local = loadLocal();
+      setEntries(local);
+      if (window.getSheetsUrl()) {
+        setSyncSt("syncing");
+        const res = await sheetsReq({action:"load"});
+        if (res?.entries?.length > 0) {
+          const byDate = {};
+          local.forEach(e => byDate[e.date]=e);
+          res.entries.forEach(e => byDate[e.date]=e);
+          const merged = Object.values(byDate);
+          setEntries(merged); saveLocal(merged); setSyncSt("ok");
+        } else if (res) { setSyncSt("ok"); }
+        else { setSyncSt("error"); }
+      }
+    }
 
-    async function handleCoach(text, allEntries) {
-      setLoading(true);
-      setCoachResponse("");
-      setErrorMsg("");
-      setView("coach");
-      const recentHistory = allEntries.slice(-5).map(e =>
-        `[${e.date}]: ${e.text.slice(0, 300)}${e.text.length > 300 ? "…" : ""}`
-      ).join("\n\n");
-      const system = `You are a warm, insightful personal coach. You read journal entries and offer:
+    useEffect(() => { window.checkApiKey(); loadAll(); }, []);
+
+    const todayEntry = entries.find(e=>e.date===getTodayKey());
+    const filtered   = entries
+      .filter(e=>e.text.toLowerCase().includes(search.toLowerCase())||(e.coachNote||"").toLowerCase().includes(search.toLowerCase()))
+      .sort((a,b)=>b.date.localeCompare(a.date));
+
+    async function doCoach(text, all) {
+      setLoading(true); setCoach(""); setErr(""); setView("coach");
+      const hist = all.slice(-5).map(e=>`[${e.date}]: ${e.text.slice(0,300)}`).join("\n\n");
+      const sys = `You are a warm, insightful personal coach. For each journal entry provide:
 1. A brief reflection or key insight (2-3 sentences)
 2. One focused coaching question to go deeper
 3. A specific micro-action or intention for today
 
-Keep responses concise — the person has 15 minutes total. Be direct, personal, and encouraging. Avoid corporate coaching clichés. Sound like a brilliant friend who really listens.
-${recentHistory ? `\nRecent journal context:\n${recentHistory}` : ""}`;
+Be concise — 15 minutes total. Direct, personal, encouraging. No clichés.
+${hist?`\nRecent context:\n${hist}`:""}`;
       try {
-        const response = await callClaude(system, `Today's entry:\n\n${text}`);
-        setCoachResponse(response);
-        return response;
-      } catch (e) {
-        setErrorMsg(e.message);
-        setCoachResponse("");
-        return null;
-      } finally {
-        setLoading(false);
-      }
+        const r = await callClaude(sys, `Today's entry:\n\n${text}`);
+        setCoach(r); return r;
+      } catch(e) { setErr(e.message); return null; }
+      finally { setLoading(false); }
     }
 
-    async function handleAskHistory(question) {
-      setLoading(true);
-      setCoachResponse("");
-      setErrorMsg("");
-      const allText = entries.map(e =>
-        `[${e.date}]: ${e.text}${e.coachNote ? `\nCoach note: ${e.coachNote}` : ""}`
-      ).join("\n\n---\n\n");
-      const system = `You are a personal journal analyst and coach. You have access to all of this person's journal entries. Answer questions about patterns, progress, recurring themes, goals, and emotional trends. Be insightful and specific — reference actual entries when relevant.\n\nAll entries:\n\n${allText}`;
-      try {
-        const response = await callClaude(system, question);
-        setCoachResponse(response);
-      } catch (e) {
-        setErrorMsg(e.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    async function handleSaveAndCoach() {
+    async function saveAndCoach() {
       if (!entry.trim()) return;
-      const coachNote = await handleCoach(entry, entries);
-      const newEntry = {
-        id: Date.now(), date: getTodayKey(), displayDate: getToday(),
-        text: entry, coachNote: coachNote || "",
-      };
-      const updated = [...entries.filter(e => e.date !== getTodayKey()), newEntry];
-      setEntries(updated);
-      saveEntries(updated);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
+      const note = await doCoach(entry, entries);
+      const ne = { id:Date.now(), date:getTodayKey(), displayDate:getToday(), text:entry, coachNote:note||"" };
+      const updated = [...entries.filter(e=>e.date!==getTodayKey()), ne];
+      setEntries(updated); saveLocal(updated);
+      setSaved(true); setTimeout(()=>setSaved(false),2500);
+      if (window.getSheetsUrl()) {
+        setSyncSt("syncing");
+        const r = await sheetsReq({action:"save",entry:ne});
+        setSyncSt(r?.ok?"ok":"error");
+      }
     }
 
-    const wordCount = entry.trim().split(/\s+/).filter(Boolean).length;
+    async function askHistory(q) {
+      setLoading(true); setCoach(""); setErr("");
+      const all = entries.map(e=>`[${e.date}]: ${e.text}${e.coachNote?`\nCoach: ${e.coachNote}`:""}`).join("\n\n---\n\n");
+      const sys = `You are a personal journal analyst and coach with access to all journal entries. Answer questions about patterns, progress, themes, goals, and trends. Reference actual entries.\n\nAll entries:\n\n${all}`;
+      try { setCoach(await callClaude(sys,q)); }
+      catch(e) { setErr(e.message); }
+      finally { setLoading(false); }
+    }
 
-    const navBtn = (v, label) => (
-      <button
-        key={v}
-        onClick={() => { setView(v); setCoachResponse(""); setErrorMsg(""); }}
-        style={{
-          padding: "8px 16px", borderRadius: 6, border: "1px solid",
-          borderColor: view === v || (view === "coach" && v === "write") ? "#c8a96e" : "#2a2820",
-          background: view === v || (view === "coach" && v === "write") ? "#1e1b15" : "transparent",
-          color: view === v || (view === "coach" && v === "write") ? "#c8a96e" : "#6b6355",
-          fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase",
-          cursor: "pointer", fontFamily: "'Cinzel', serif",
-        }}
-      >{label}</button>
+    const words = entry.trim().split(/\s+/).filter(Boolean).length;
+
+    const SyncPill = () => {
+      if (!sheetOn) return <button className="sync-pill off" onClick={window.openSheets}>○ Connect Sheets</button>;
+      if (syncSt==="syncing") return <span className="sync-pill on">↻ Syncing…</span>;
+      if (syncSt==="ok")      return <span className="sync-pill on">✓ Backed up</span>;
+      if (syncSt==="error")   return <button className="sync-pill err" onClick={window.openSheets}>✗ Sync error</button>;
+      return <span className="sync-pill on">✓ Sheets on</span>;
+    };
+
+    const tab = (v,label) => (
+      <button onClick={()=>{setView(v);setCoach("");setErr("");}} style={{
+        padding:"8px 16px", borderRadius:6, border:"1px solid",
+        borderColor:(view===v||(view==="coach"&&v==="write"))?"#c8a96e":"#2a2820",
+        background:(view===v||(view==="coach"&&v==="write"))?"#1e1b15":"transparent",
+        color:(view===v||(view==="coach"&&v==="write"))?"#c8a96e":"#6b6355",
+        fontSize:11, letterSpacing:"0.12em", textTransform:"uppercase",
+        cursor:"pointer", fontFamily:"'Cinzel',serif",
+      }}>{label}</button>
     );
 
+    const S = { // shared styles shorthand
+      card:  { padding:"16px 18px", borderRadius:8, marginBottom:10, cursor:"pointer", transition:"all 0.15s" },
+      label: { fontFamily:"'Cinzel',serif", fontSize:10, letterSpacing:"0.22em", color:"#6b6355", textTransform:"uppercase", marginBottom:16 },
+    };
+
     return (
-      <div style={{
-        minHeight: "100vh", background: "#0f0e0c",
-        fontFamily: "'Lora', Georgia, serif", color: "#e8e0d0",
-        display: "flex", flexDirection: "column",
-      }}>
-        {/* Header */}
+      <div style={{minHeight:"100vh",background:"#0f0e0c",fontFamily:"'Lora',Georgia,serif",color:"#e8e0d0",display:"flex",flexDirection:"column"}}>
+
         <header style={{
-          padding: "env(safe-area-inset-top, 20px) 28px 16px",
-          paddingTop: "max(env(safe-area-inset-top, 0px), 20px)",
-          borderBottom: "1px solid #1e1c18",
-          display: "flex", justifyContent: "space-between", alignItems: "flex-start",
-          position: "sticky", top: 0, background: "#0f0e0c", zIndex: 10,
+          padding:"max(env(safe-area-inset-top,0px),20px) 24px 14px",
+          borderBottom:"1px solid #1e1c18", display:"flex", justifyContent:"space-between",
+          alignItems:"flex-start", position:"sticky", top:0, background:"#0f0e0c", zIndex:10,
         }}>
           <div>
-            <div style={{ fontFamily: "'Cinzel', serif", fontSize: 10, letterSpacing: "0.25em", color: "#4a4235", textTransform: "uppercase", marginBottom: 4 }}>
-              Personal Journal
-            </div>
-            <div style={{ fontSize: 13, color: "#7a6f5e", fontStyle: "italic" }}>{getToday()}</div>
+            <div style={{fontFamily:"'Cinzel',serif",fontSize:10,letterSpacing:"0.25em",color:"#4a4235",textTransform:"uppercase",marginBottom:4}}>Personal Journal</div>
+            <div style={{fontSize:13,color:"#7a6f5e",fontStyle:"italic"}}>{getToday()}</div>
           </div>
-          <div style={{ display: "flex", gap: 6 }}>
-            {navBtn("write", "Write")}
-            {navBtn("history", "Past")}
-            {navBtn("ask", "Ask")}
-          </div>
+          <div style={{display:"flex",gap:6}}>{tab("write","Write")}{tab("history","Past")}{tab("ask","Ask")}</div>
         </header>
 
-        <main style={{ flex: 1, padding: "24px 24px 40px", maxWidth: 700, width: "100%", margin: "0 auto" }}>
+        <main style={{flex:1,padding:"22px 24px 48px",maxWidth:700,width:"100%",margin:"0 auto"}}>
 
-          {/* ── WRITE / COACH VIEW ── */}
-          {(view === "write" || view === "coach") && (
-            <div>
-              {view === "write" && (
-                <>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-                    <button
-                      onClick={() => setShowPrompt(!showPrompt)}
-                      style={{
-                        background: "transparent", border: "1px solid #2a2820",
-                        color: "#6b6355", padding: "5px 13px", borderRadius: 5,
-                        fontSize: 10, letterSpacing: "0.18em", textTransform: "uppercase",
-                        cursor: "pointer", fontFamily: "'Cinzel', serif",
-                      }}
-                    >{showPrompt ? "Hide prompt" : "✦ Show prompt"}</button>
-                    {saved && <span style={{ color: "#7a9e7a", fontSize: 12, fontStyle: "italic" }}>Saved ✓</span>}
-                  </div>
-
-                  {showPrompt && (
-                    <div style={{
-                      padding: "14px 18px", borderLeft: "2px solid #c8a96e", marginBottom: 20,
-                      background: "#14120e", borderRadius: "0 6px 6px 0",
-                      color: "#c8a96e", fontSize: 15, fontStyle: "italic", lineHeight: 1.65,
-                    }}>
-                      {dailyPrompt}
-                    </div>
-                  )}
-
-                  {todayEntry && (
-                    <div style={{
-                      padding: "10px 14px", background: "#14120e", borderRadius: 6,
-                      marginBottom: 16, fontSize: 12, color: "#6b6355",
-                      display: "flex", justifyContent: "space-between", alignItems: "center",
-                    }}>
-                      <span>You wrote today already.</span>
-                      <button
-                        onClick={() => { setEntry(todayEntry.text); setView("coach"); setCoachResponse(todayEntry.coachNote || ""); }}
-                        style={{ background: "transparent", border: "none", color: "#c8a96e", cursor: "pointer", fontSize: 12 }}
-                      >View coaching →</button>
-                    </div>
-                  )}
-
-                  <textarea
-                    value={entry}
-                    onChange={e => setEntry(e.target.value)}
-                    placeholder="Start writing… no rules, no judgment. Just you and the page."
-                    style={{
-                      width: "100%", minHeight: 300, background: "#14120e",
-                      border: "1px solid #2a2820", borderRadius: 8,
-                      padding: "20px 22px", color: "#e8e0d0", fontSize: 18,
-                      lineHeight: 1.8, fontFamily: "'Lora', Georgia, serif",
-                      resize: "vertical", outline: "none", caretColor: "#c8a96e",
-                      transition: "border-color 0.2s",
-                    }}
-                    onFocus={e => e.target.style.borderColor = "#3a3628"}
-                    onBlur={e => e.target.style.borderColor = "#2a2820"}
-                  />
-
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14 }}>
-                    <span style={{ fontSize: 12, color: "#3a3628" }}>
-                      {wordCount > 0 ? `${wordCount} word${wordCount !== 1 ? "s" : ""}` : ""}
-                    </span>
-                    <button
-                      onClick={handleSaveAndCoach}
-                      disabled={!entry.trim() || loading}
-                      style={{
-                        padding: "12px 30px",
-                        background: entry.trim() ? "#c8a96e" : "#1e1c18",
-                        color: entry.trim() ? "#0f0e0c" : "#3a3628",
-                        border: "none", borderRadius: 6,
-                        fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase",
-                        cursor: entry.trim() ? "pointer" : "default",
-                        fontFamily: "'Cinzel', serif", transition: "all 0.2s",
-                      }}
-                    >{loading ? "Thinking…" : "Save & Coach →"}</button>
-                  </div>
-
-                  {errorMsg && (
-                    <div style={{ marginTop: 14, padding: "10px 14px", background: "#1e0e0e", borderRadius: 6, color: "#c07070", fontSize: 13 }}>
-                      {errorMsg === "Invalid API key"
-                        ? <>Invalid API key. <button onClick={window.checkApiKey} style={{ background: "none", border: "none", color: "#c8a96e", cursor: "pointer", fontSize: 13 }}>Update key →</button></>
-                        : errorMsg}
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* Coach panel */}
-              {view === "coach" && (
-                <div>
-                  <button
-                    onClick={() => setView("write")}
-                    style={{ background: "transparent", border: "none", color: "#6b6355", cursor: "pointer", fontSize: 13, marginBottom: 20, padding: 0 }}
-                  >← Back to writing</button>
-
-                  {entry && (
-                    <div style={{
-                      padding: "16px 20px", background: "#14120e", borderRadius: 8, marginBottom: 24,
-                      fontSize: 15, lineHeight: 1.75, color: "#7a6f5e", fontStyle: "italic",
-                      maxHeight: 150, overflowY: "auto", borderLeft: "2px solid #2a2820",
-                    }}>
-                      {entry}
-                    </div>
-                  )}
-
-                  <div style={{ fontFamily: "'Cinzel', serif", fontSize: 10, letterSpacing: "0.22em", color: "#6b6355", textTransform: "uppercase", marginBottom: 16 }}>
-                    ✦ Coaching
-                  </div>
-
-                  {loading
-                    ? <div style={{ color: "#6b6355", fontStyle: "italic", fontSize: 15 }}>Reading your entry…</div>
-                    : <div style={{ fontSize: 16, lineHeight: 1.85, color: "#d4c9b0", whiteSpace: "pre-wrap" }}>{coachResponse}</div>
-                  }
-
-                  {errorMsg && (
-                    <div style={{ marginTop: 14, padding: "10px 14px", background: "#1e0e0e", borderRadius: 6, color: "#c07070", fontSize: 13 }}>
-                      {errorMsg}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── HISTORY VIEW ── */}
-          {view === "history" && (
-            <div>
-              <input
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search entries…"
-                style={{
-                  width: "100%", padding: "11px 16px", background: "#14120e",
-                  border: "1px solid #2a2820", borderRadius: 6, color: "#e8e0d0",
-                  fontSize: 14, fontFamily: "'Lora', serif", outline: "none", marginBottom: 20,
-                }}
-              />
-
-              {filteredEntries.length === 0 && (
-                <div style={{ color: "#3a3628", fontStyle: "italic", textAlign: "center", marginTop: 60 }}>
-                  No entries yet. Start writing.
-                </div>
-              )}
-
-              {filteredEntries.map(e => (
-                <div
-                  key={e.id}
-                  onClick={() => setSelectedEntry(selectedEntry?.id === e.id ? null : e)}
-                  style={{
-                    padding: "16px 18px", background: selectedEntry?.id === e.id ? "#14120e" : "transparent",
-                    border: "1px solid", borderColor: selectedEntry?.id === e.id ? "#3a3628" : "#1e1c18",
-                    borderRadius: 8, marginBottom: 10, cursor: "pointer", transition: "all 0.15s",
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                    <span style={{ fontFamily: "'Cinzel', serif", fontSize: 10, color: "#c8a96e", letterSpacing: "0.12em", textTransform: "uppercase" }}>{e.displayDate}</span>
-                    <span style={{ fontSize: 11, color: "#3a3628" }}>{e.text.trim().split(/\s+/).length} words</span>
-                  </div>
-                  <div style={{
-                    fontSize: 14, color: "#7a6f5e", lineHeight: 1.55,
-                    overflow: "hidden", maxHeight: selectedEntry?.id === e.id ? "none" : 44,
-                  }}>
-                    {e.text}
-                  </div>
-                  {selectedEntry?.id === e.id && e.coachNote && (
-                    <div style={{
-                      marginTop: 16, paddingTop: 16, borderTop: "1px solid #2a2820",
-                      fontSize: 14, color: "#a09070", lineHeight: 1.75, fontStyle: "italic", whiteSpace: "pre-wrap",
-                    }}>
-                      <span style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: "0.2em", color: "#6b6355", textTransform: "uppercase", fontStyle: "normal", display: "block", marginBottom: 8 }}>✦ Coaching note</span>
-                      {e.coachNote}
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              {entries.length > 0 && (
-                <div style={{ marginTop: 24, textAlign: "center" }}>
-                  <button
-                    onClick={() => {
-                      if (window.confirm("Export all entries as text?")) {
-                        const txt = entries.sort((a,b) => a.date.localeCompare(b.date)).map(e =>
-                          `${e.displayDate}\n${"─".repeat(40)}\n${e.text}${e.coachNote ? `\n\n[Coaching]\n${e.coachNote}` : ""}`
-                        ).join("\n\n\n");
-                        const blob = new Blob([txt], { type: "text/plain" });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url; a.download = "my-journal.txt"; a.click();
-                      }
-                    }}
-                    style={{
-                      background: "transparent", border: "1px solid #2a2820", color: "#6b6355",
-                      padding: "8px 18px", borderRadius: 5, fontSize: 11, cursor: "pointer",
-                      fontFamily: "'Cinzel', serif", letterSpacing: "0.15em", textTransform: "uppercase",
-                    }}
-                  >↓ Export all entries</button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── ASK VIEW ── */}
-          {view === "ask" && (
-            <div>
-              <div style={{ fontSize: 13, color: "#6b6355", marginBottom: 20, lineHeight: 1.7 }}>
-                Ask anything about your journal history — patterns, progress, recurring themes, what your past self was working on.
+          {/* ── WRITE / COACH ── */}
+          {(view==="write"||view==="coach") && <div>
+            {view==="write" && <>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18,flexWrap:"wrap"}}>
+                <button onClick={()=>setShowPrmt(!showPrmt)} style={{
+                  background:"transparent",border:"1px solid #2a2820",color:"#6b6355",
+                  padding:"5px 13px",borderRadius:5,fontSize:10,letterSpacing:"0.18em",
+                  textTransform:"uppercase",cursor:"pointer",fontFamily:"'Cinzel',serif",
+                }}>{showPrmt?"Hide prompt":"✦ Show prompt"}</button>
+                <SyncPill />
+                {saved && <span style={{color:"#7a9e7a",fontSize:12,fontStyle:"italic"}}>Saved ✓</span>}
               </div>
 
-              {entries.length === 0
-                ? <div style={{ color: "#3a3628", fontStyle: "italic" }}>No entries yet to analyse.</div>
-                : <>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
-                      {[
-                        "What goals keep coming up?",
-                        "How has my mood shifted over time?",
-                        "What am I avoiding?",
-                        "What progress have I made?",
-                      ].map(q => (
-                        <button
-                          key={q}
-                          onClick={() => handleAskHistory(q)}
-                          style={{
-                            padding: "7px 13px", background: "transparent", border: "1px solid #2a2820",
-                            borderRadius: 5, color: "#7a6f5e", fontSize: 12,
-                            fontFamily: "'Lora', serif", cursor: "pointer", fontStyle: "italic",
-                          }}
-                        >{q}</button>
-                      ))}
-                    </div>
+              {showPrmt && (
+                <div style={{padding:"14px 18px",borderLeft:"2px solid #c8a96e",marginBottom:20,background:"#14120e",borderRadius:"0 6px 6px 0",color:"#c8a96e",fontSize:15,fontStyle:"italic",lineHeight:1.65}}>
+                  {prompt}
+                </div>
+              )}
 
-                    <AskBox onAsk={handleAskHistory} loading={loading} />
+              {todayEntry && (
+                <div style={{padding:"10px 14px",background:"#14120e",borderRadius:6,marginBottom:16,fontSize:12,color:"#6b6355",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span>You wrote today already.</span>
+                  <button onClick={()=>{setEntry(todayEntry.text);setView("coach");setCoach(todayEntry.coachNote||"");}}
+                    style={{background:"transparent",border:"none",color:"#c8a96e",cursor:"pointer",fontSize:12}}>View coaching →</button>
+                </div>
+              )}
 
-                    {loading && <div style={{ color: "#6b6355", fontStyle: "italic", marginTop: 20 }}>Searching your history…</div>}
+              <textarea value={entry} onChange={e=>setEntry(e.target.value)}
+                placeholder="Start writing… no rules, no judgment. Just you and the page."
+                style={{width:"100%",minHeight:300,background:"#14120e",border:"1px solid #2a2820",borderRadius:8,padding:"20px 22px",color:"#e8e0d0",fontSize:18,lineHeight:1.8,fontFamily:"'Lora',Georgia,serif",resize:"vertical",outline:"none",caretColor:"#c8a96e"}}
+                onFocus={e=>e.target.style.borderColor="#3a3628"}
+                onBlur={e=>e.target.style.borderColor="#2a2820"}
+              />
 
-                    {errorMsg && (
-                      <div style={{ marginTop: 14, padding: "10px 14px", background: "#1e0e0e", borderRadius: 6, color: "#c07070", fontSize: 13 }}>
-                        {errorMsg}
-                      </div>
-                    )}
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:14}}>
+                <span style={{fontSize:12,color:"#3a3628"}}>{words>0?`${words} word${words!==1?"s":""}`:""}</span>
+                <button onClick={saveAndCoach} disabled={!entry.trim()||loading} style={{
+                  padding:"12px 30px",
+                  background:entry.trim()?"#c8a96e":"#1e1c18",
+                  color:entry.trim()?"#0f0e0c":"#3a3628",
+                  border:"none",borderRadius:6,fontSize:11,letterSpacing:"0.15em",
+                  textTransform:"uppercase",cursor:entry.trim()?"pointer":"default",
+                  fontFamily:"'Cinzel',serif",transition:"all 0.2s",
+                }}>{loading?"Thinking…":"Save & Coach →"}</button>
+              </div>
 
-                    {coachResponse && !loading && (
-                      <div style={{
-                        marginTop: 24, padding: "20px 22px", background: "#14120e", borderRadius: 8,
-                        fontSize: 15, lineHeight: 1.85, color: "#d4c9b0", whiteSpace: "pre-wrap",
-                        borderLeft: "2px solid #c8a96e",
-                      }}>
-                        {coachResponse}
-                      </div>
-                    )}
-                  </>
-              }
+              {err && <div style={{marginTop:14,padding:"10px 14px",background:"#1e0e0e",borderRadius:6,color:"#c07070",fontSize:13}}>
+                {err==="Invalid API key"
+                  ? <><span>Invalid API key. </span><button onClick={window.checkApiKey} style={{background:"none",border:"none",color:"#c8a96e",cursor:"pointer",fontSize:13}}>Update →</button></>
+                  : err}
+              </div>}
+            </>}
+
+            {view==="coach" && <div>
+              <button onClick={()=>setView("write")} style={{background:"transparent",border:"none",color:"#6b6355",cursor:"pointer",fontSize:13,marginBottom:20,padding:0}}>← Back to writing</button>
+              {entry && <div style={{padding:"16px 20px",background:"#14120e",borderRadius:8,marginBottom:24,fontSize:15,lineHeight:1.75,color:"#7a6f5e",fontStyle:"italic",maxHeight:150,overflowY:"auto",borderLeft:"2px solid #2a2820"}}>{entry}</div>}
+              <div style={S.label}>✦ Coaching</div>
+              {loading
+                ? <div style={{color:"#6b6355",fontStyle:"italic",fontSize:15}}>Reading your entry…</div>
+                : <div style={{fontSize:16,lineHeight:1.85,color:"#d4c9b0",whiteSpace:"pre-wrap"}}>{coach}</div>}
+              {err && <div style={{marginTop:14,padding:"10px 14px",background:"#1e0e0e",borderRadius:6,color:"#c07070",fontSize:13}}>{err}</div>}
+            </div>}
+          </div>}
+
+          {/* ── HISTORY ── */}
+          {view==="history" && <div>
+            <div style={{display:"flex",gap:10,marginBottom:20,alignItems:"center",flexWrap:"wrap"}}>
+              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search entries…"
+                style={{flex:1,minWidth:160,padding:"11px 16px",background:"#14120e",border:"1px solid #2a2820",borderRadius:6,color:"#e8e0d0",fontSize:14,fontFamily:"'Lora',serif",outline:"none"}} />
+              <SyncPill />
             </div>
-          )}
+
+            {filtered.length===0 && <div style={{color:"#3a3628",fontStyle:"italic",textAlign:"center",marginTop:60}}>No entries yet. Start writing.</div>}
+
+            {filtered.map(e=>(
+              <div key={e.id} onClick={()=>setSelEntry(selEntry?.id===e.id?null:e)}
+                style={{...S.card,background:selEntry?.id===e.id?"#14120e":"transparent",border:"1px solid",borderColor:selEntry?.id===e.id?"#3a3628":"#1e1c18"}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                  <span style={{fontFamily:"'Cinzel',serif",fontSize:10,color:"#c8a96e",letterSpacing:"0.12em",textTransform:"uppercase"}}>{e.displayDate}</span>
+                  <span style={{fontSize:11,color:"#3a3628"}}>{e.text.trim().split(/\s+/).length} words</span>
+                </div>
+                <div style={{fontSize:14,color:"#7a6f5e",lineHeight:1.55,overflow:"hidden",maxHeight:selEntry?.id===e.id?"none":44}}>{e.text}</div>
+                {selEntry?.id===e.id && e.coachNote && (
+                  <div style={{marginTop:16,paddingTop:16,borderTop:"1px solid #2a2820",fontSize:14,color:"#a09070",lineHeight:1.75,fontStyle:"italic",whiteSpace:"pre-wrap"}}>
+                    <span style={{fontFamily:"'Cinzel',serif",fontSize:9,letterSpacing:"0.2em",color:"#6b6355",textTransform:"uppercase",fontStyle:"normal",display:"block",marginBottom:8}}>✦ Coaching note</span>
+                    {e.coachNote}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {entries.length>0 && <div style={{marginTop:24,textAlign:"center"}}>
+              <button onClick={()=>{
+                const txt=[...entries].sort((a,b)=>a.date.localeCompare(b.date)).map(e=>`${e.displayDate}\n${"─".repeat(40)}\n${e.text}${e.coachNote?`\n\n[Coaching]\n${e.coachNote}`:""}`).join("\n\n\n");
+                const a=document.createElement("a");
+                a.href=URL.createObjectURL(new Blob([txt],{type:"text/plain"}));
+                a.download="my-journal.txt"; a.click();
+              }} style={{background:"transparent",border:"1px solid #2a2820",color:"#6b6355",padding:"8px 18px",borderRadius:5,fontSize:11,cursor:"pointer",fontFamily:"'Cinzel',serif",letterSpacing:"0.15em",textTransform:"uppercase"}}>
+                ↓ Export all entries
+              </button>
+            </div>}
+          </div>}
+
+          {/* ── ASK ── */}
+          {view==="ask" && <div>
+            <div style={{fontSize:13,color:"#6b6355",marginBottom:20,lineHeight:1.7}}>
+              Ask anything about your journal history — patterns, progress, recurring themes, what your past self was working on.
+            </div>
+            {entries.length===0
+              ? <div style={{color:"#3a3628",fontStyle:"italic"}}>No entries yet to analyse.</div>
+              : <>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
+                    {["What goals keep coming up?","How has my mood shifted over time?","What am I avoiding?","What progress have I made?"].map(q=>(
+                      <button key={q} onClick={()=>askHistory(q)} style={{padding:"7px 13px",background:"transparent",border:"1px solid #2a2820",borderRadius:5,color:"#7a6f5e",fontSize:12,fontFamily:"'Lora',serif",cursor:"pointer",fontStyle:"italic"}}>{q}</button>
+                    ))}
+                  </div>
+                  <AskBox onAsk={askHistory} loading={loading} />
+                  {loading && <div style={{color:"#6b6355",fontStyle:"italic",marginTop:20}}>Searching your history…</div>}
+                  {err && <div style={{marginTop:14,padding:"10px 14px",background:"#1e0e0e",borderRadius:6,color:"#c07070",fontSize:13}}>{err}</div>}
+                  {coach && !loading && <div style={{marginTop:24,padding:"20px 22px",background:"#14120e",borderRadius:8,fontSize:15,lineHeight:1.85,color:"#d4c9b0",whiteSpace:"pre-wrap",borderLeft:"2px solid #c8a96e"}}>{coach}</div>}
+                </>}
+          </div>}
+
         </main>
 
         <footer style={{
-          padding: "14px 28px", borderTop: "1px solid #1a1814",
-          display: "flex", justifyContent: "space-between",
-          fontSize: 10, color: "#2a2820", letterSpacing: "0.1em",
-          fontFamily: "'Cinzel', serif", textTransform: "uppercase",
-          paddingBottom: "max(env(safe-area-inset-bottom, 0px), 14px)",
+          padding:"12px 24px",borderTop:"1px solid #1a1814",
+          display:"flex",justifyContent:"space-between",alignItems:"center",
+          fontSize:10,color:"#2a2820",letterSpacing:"0.1em",fontFamily:"'Cinzel',serif",textTransform:"uppercase",
+          paddingBottom:"max(env(safe-area-inset-bottom,0px),12px)",
         }}>
-          <span>{entries.length} {entries.length === 1 ? "entry" : "entries"}</span>
-          <button
-            onClick={window.checkApiKey}
-            style={{ background: "none", border: "none", color: "#2a2820", cursor: "pointer", fontSize: 10, fontFamily: "'Cinzel', serif", letterSpacing: "0.1em", textTransform: "uppercase" }}
-          >⚙ API Key</button>
+          <span>{entries.length} {entries.length===1?"entry":"entries"}</span>
+          <div style={{display:"flex",gap:16}}>
+            <button onClick={window.openSheets}  style={{background:"none",border:"none",color:"#2a2820",cursor:"pointer",fontSize:10,fontFamily:"'Cinzel',serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>⊞ Sheets</button>
+            <button onClick={window.checkApiKey} style={{background:"none",border:"none",color:"#2a2820",cursor:"pointer",fontSize:10,fontFamily:"'Cinzel',serif",letterSpacing:"0.1em",textTransform:"uppercase"}}>⚙ API Key</button>
+          </div>
         </footer>
       </div>
     );
   }
 
-  ReactDOM.createRoot(document.getElementById("root")).render(<Journal />);
+  ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 </script>
 </body>
 </html>
